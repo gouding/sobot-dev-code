@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Sobot Development",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -11,25 +11,45 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Build Apps",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Web",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "build-apps/web/markdown",
+              "build-apps/web/code",
+              "build-apps/web/images",
+              "build-apps/web/settings",
+              "build-apps/web/navigation"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Apps",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              {
+                "group": "iOS",
+                "pages": [
+                  "build-apps/apps/markdown"
+                ]
+              },
+              {
+                "group": "Android",
+                "pages": [
+                  "build-apps/apps/code"
+                ]
+              },
+              {
+                "group": "Flutter",
+                "pages": [
+                  "build-apps/apps/settings"
+                ]
+              },
+              {
+                "group": "HarmonyOS NEXT",
+                "pages": [
+                  "build-apps/apps/images"
+                ]
+              }
             ]
           }
         ]
@@ -38,65 +58,42 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "API Guide",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint Examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
+            "group": "Online",
+            "openapi": "api-reference/openapis/online-openapi.json"
+          },
+          {
+            "group": "Voice",
+            "openapi": "api-reference/openapis/voice-openapi.json"
+          },
+          {
+            "group": "Basic",
+            "openapi": "api-reference/openapis/basic-openapi.json"
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/SobotLogo.svg",
+    "dark": "/logo/SobotLogo.svg"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Help Center",
+        "href": "https://www.sobot.io/help/"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "label": "Go Home",
+      "href": "https://www.sobot.io"
     }
   }
 }

@@ -1,33 +1,286 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Sobot Product Updates, Sobot Contact Center Solution Updates'
 ---
 
 <Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
+  Sobot: All-in-One Contact Center Solution | Omnichannel & AI
 </Note>
 
 ## Welcome
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+The Sobot Developer Platform provides customers with application development capabilities for multiple cloud products and diverse scenarios. Through Cloud APIs, you can quickly interact with Sobots's cloud products with minimal code, enhancing efficiency for frequently used functions. You can also combine Cloud APIs to implement more advanced functionalities. Products include: CRM, Basic Agent Data, Text, Voice, Work Orders, Quality Assurance, Message Center, Mall Center, Zhike, etc.
+[Sobot](https://www.sobot.io) and [Updates](https://help.sobot.io/updates/).
+
 
 <Card
-  title="Plant Store Endpoints"
+  title="Sobot Developer Platform"
   icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+  href="https://www.sobot.io/developer/"
 >
   View the OpenAPI specification file
 </Card>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+### ● Token Guide
+
+<Note>
+The "token" param must be contained in the header of the https request when calling the API.
+</Note>
+
+Token is the only global API call credential for the Sobot API open platform. It is used when developers call the business APIs and thus should be properly kept. At least 32 chars should be reserved to store token. The validity period of token is currently 24 hours. It needs to be refreshed regularly or reacquired according to the token failure prompt returned by the API. When requesting the token API, regardless of the existence of token, a new token will be returned and its expiry time will be reset (currently 24 hours).
+
+Token usage description:
+1. Developers need to obtain and manage the token uniformly. When calling the Sobot open APIs of various business, they should use the same token, instead of refreshing and obtaining new tokens for each business. Otherwise, it will easily lead to token invalidation and affect the normal API call.
+2. The current validity period of the token is transmitted by the returned expire_in, which is currently a value within 86,400 s. Developers need to refresh the new token in advance based on this valid time.
+3. Developers should reacquire the token according to the token invalidation prompt returned by the API.
+
+
+### ● Get Token
+
+API Description:
+`
+Get the open API token, which is only applicable to all APIs of Sobot Open Platform v5.0. Contact the Sobot after-sales service personnel to get appid and app_key in the API.
+`
+
+Request Method: `GET`
+
+Request URL:
+
+```bash
+ https://sg.sobot.io/api/get_token
+``` 
+
+
+Request Param:
+
+| Param       | Type   | Required | Description                                                                         |
+|-------------|--------|----------|-------------------------------------------------------------------------------------|
+| appid       | String | Yes      | The 3rd-party user's unique API call credential ID                                  |
+| create_time | String | Yes      | Timestamp (s), e.g.: timestamp 1569397773 for 2019-09-25 15:49:33                   |
+| sign        | String | Yes      | Signature, which is md5(appid+create_time+app_key) sign signature; app_key is a key |
+
+Request Example:
+
+```bash
+curl https://sg.sobot.io/api/get_token?appid=1&create_time=1569397773&sign=258eec3118705112b2c53dc8043d4d34
+```
+
+Return Param:
+
+| Param    | Type   | Required | Description    |
+|----------|--------|----------|----------------|
+| ret_code | String | Yes      | Return code    |
+| ret_msg  | String | Yes      | Return message |
+| item     | Object | No       | Return object  |
+
+Item Object:
+
+| Param      | Type   | Required | Description                     |
+|------------|--------|----------|---------------------------------|
+| token      | String | Yes      | Token code                      |
+| expires_in | String | Yes      | Credential valid time (unit: s) |
+
+<Note>
+Timestamp conversion tool:
+
+https://www.unixtimestamp.com/
+
+sign Signature generation example:
+
+E.g., appid = "1"; create_time="1569397773"; app_key="2"
+
+sign = Md5("115693977732") is 258eec3118705112b2c53dc8043d4d34.
+</Note>
+
+Return Example:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+   "item": {
+       "token": "4ac37cb2e9c740dba4b75a34d5358802",
+       "expires_in": "86400"
+   },
+   "ret_code": "000000",
+   "ret_msg": "Success"
+}
+```
+
+##  Obtain Basic Data
+
+<Note>
+Basic data as input parameters for other interfaces
+</Note>
+
+### ● Query Time Zone
+
+API Description: `Search all time zones`
+
+Request URL: `GET`
+
+Request URL:
+
+```bash
+https://sg.sobot.io/api/scrm/5/user/get_timezone
+```
+
+Request Param:
+
+| Param    | Type   | Required | Description                                   |
+|----------|--------|----------|-----------------------------------------------|
+| language | String | Yes      | Language identification zh-Chinese en-English |
+
+Request Example:
+
+```bash
+curl -H 'token:4ac37cb2e9c740dba4b75a34d5358802' https://sg.sobot.io/api/scrm/5/user/get_timezone
+?language=zh
+```
+
+Return Param:
+
+| Param    | Type   | Required | Description        |
+|----------|--------|----------|--------------------|
+| ret_code | String | Yes      | Return code        |
+| ret_msg  | String | Yes      | Return message     |
+| items    | String | Yes      | List of time zones |
+
+Items set:
+
+| Param          | Type    | Required | Description     |
+|----------------|---------|----------|-----------------|
+| id             | String  | Yes      | Primary key     |
+| language       | String  | Yes      | Language        |
+| timezone_value | Integer | Yes      | Time zone value |
+| timezoneid     | String  | Yes      | Time zone ID    |
+
+Return Example:
+
+```json
+{
+    "items": [
+      {
+        "id": "aa08a602e63d4d188f52b0809e6794b0",
+        "language": "zh",
+        "timezone_value": "GMT-11:00 American Samoa",
+        "timezoneid": "US/Samoa"
+      }
+    ],
+    "ret_code": "000000",
+    "ret_msg": "Success"
+}
+```
+
+### ● Multiple Languages
+
+API description:  `Search all languages`
+
+Request URL: `GET`
+
+Request URL:
+
+```bash
+https://sg.sobot.io/api/scrm/5/user/get_language
+```
+Request Param:
+
+| Param    | Type   | Required | Description                                   |
+|----------|--------|----------|-----------------------------------------------|
+| language | String | Yes      | Language identification zh-Chinese en-English |
+
+Request Example:
+
+```bash
+curl -H 'token:4ac37cb2e9c740dba4b75a34d5358802' https://sg.sobot.io/api/scrm/5/user/get_language
+?language=zh
+```
+
+Return Param:
+
+| Param    | Type   | Required | Description        |
+|----------|--------|----------|--------------------|
+| ret_code | String | Yes      | Return code        |
+| ret_msg  | String | Yes      | Return message     |
+| items    | String | Yes      | Lists of languages |
+
+
+Items set:
+
+| Param          | Type    | Required | Description             |
+|----------------|---------|----------|-------------------------|
+| id             | String  | Yes      | Primary key             |
+| language       | String  | Yes      | Language                |
+| language_value | Integer | Yes      | Language value          |
+| language_code  | String  | Yes      | language identification |
+
+Return Example:
+
+```json
+{
+    "items": [
+      {
+        "id": "aa08a602e63d4d188f52b0809e6794b0",
+        "language": "zh",
+        "language_value": "Simplified Chinese",
+        "language_code": "zh"
+      }
+    ],
+    "ret_code": "000000",
+    "ret_msg": "Success"
+}
+```
+
+##### ● Search Country
+
+API Description: `Search all countries`
+
+Request method: `GET`
+
+Request URL:
+
+```bash
+https://sg.sobot.io/api/scrm/5/user/get_country
+```
+Request Param:
+
+| Param    | Type   | Required | Description                                   |
+|----------|--------|----------|-----------------------------------------------|
+| language | String | Yes      | Language identification zh-Chinese en-English |
+
+Request Example:
+
+```bash
+curl -H 'token:4ac37cb2e9c740dba4b75a34d5358802' https://sg.sobot.io/api/scrm/5/user/get_country
+?language=zh
+```
+
+Return param:
+
+| Param    | Type   | Required | Description       |
+|----------|--------|----------|-------------------|
+| ret_code | String | Yes      | Return code       |
+| ret_msg  | String | Yes      | Return message    |
+| items    | String | Yes      | List of countries |
+
+Items set:
+
+| Param        | Type   | Required | Description  |
+|--------------|--------|----------|--------------|
+| countryid    | String | Yes      | Country ID   |
+| country_name | String | Yes      | Country Name |
+
+Return Example:
+
+```json
+{
+    "items": [
+      {
+        "countryid": "101",
+        "country_name": "China"
+      }
+    ],
+    "ret_code": "000000",
+    "ret_msg": "Success"
+}
 ```
