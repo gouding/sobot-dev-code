@@ -358,21 +358,21 @@ For details, see the SobotCallResultBlock description.
 | Attribute | Name | Type | Nullable | Description |
 | --------- | ------ | ------ | ---- | --- |
 | ext | Extension Number | string | No   | Extension Number |
-| agentStatus | Login Status | string | No   | The agent's login status after successful sign-in.<br> 1: Online; 2: Do Not Disturb.<br> If left empty, the default is Do Not Disturb. |
+| agentStatus | Login Status | string | No   | The agent's login status after successful sign-in.\r\n 1: Online; 2: Do Not Disturb.\r\n If left empty, the default is Do Not Disturb. |
 | callWay    | Login Method |int | No   |  2.sip   3.Mobile Login  (Web login method not supported) |
-| bindMobile    | Bind phone number |int | Yes  | Mobile number or landline number.<br>When the answering method is mobile, the bound phone number is not empty. The bound phone number specified by the interface will change the bound phone number in the agent settings.<br>The bound phone numbers for different agents cannot be the same. |
+| bindMobile    | Bind phone number |int | Yes  | Mobile number or landline number.\r\nWhen the answering method is mobile, the bound phone number is not empty. The bound phone number specified by the interface will change the bound phone number in the agent settings.\r\nThe bound phone numbers for different agents cannot be the same. |
 |thisQueues    | Reception skill group number set  |NSArray | Yes   |  Reception skill group |
 
 
 #### Return Value of Success Callback Function
 | Attribute       |  Name    | Type   | Description |
 | -------------- | ------- | ------- | ---- |
-| agentState | Login Status | string | The agent's login status after successful sign-in.<br> 1: Online; 2: Do Not Disturb.<br> If left empty, the default is Do Not Disturb. |
-| phoneType | Answering Mode | string | The answering mode specified by the interface will modify the agent's default answering mode after successful login. The administrator resetting the agent's answering mode permission will also change the agent's default answering mode.<br> sip: SIP phone; pstn: mobile phone; webrtc: web page.<br> If empty, the system will use the agent's default answering mode. |
-| bindExt    | Bind extension account | string | The extension account specified by the interface will change the extension account bound in the agent settings.<br>When empty, the system will use the extension account bound in the agent settings. |
-| bindMobile  | Bind phone number | string | Mobile number or landline number.<br>The phone number specified by the interface will change the bound phone number in the agent settings.<br>If left empty, the system will use the bound phone number from the agent settings. |
-| reasonCode  | Busy Reason | number | The reason for being busy.<br>2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
-| agentLoginQueueInfos  | Reception Skill Group | List<QueueAgentCheckin> | Yes | Detailed information of the skill group set for the currently signed-in agents |
+| agentState | Login Status | string | The agent's login status after successful sign-in.\r\n 1: Online; 2: Do Not Disturb.\r\n If left empty, the default is Do Not Disturb. |
+| phoneType | Answering Mode | string | The answering mode specified by the interface will modify the agent's default answering mode after successful login. The administrator resetting the agent's answering mode permission will also change the agent's default answering mode.\r\n sip: SIP phone; pstn: mobile phone; webrtc: web page.\r\n If empty, the system will use the agent's default answering mode. |
+| bindExt    | Bind extension account | string | The extension account specified by the interface will change the extension account bound in the agent settings.\r\nWhen empty, the system will use the extension account bound in the agent settings. |
+| bindMobile  | Bind phone number | string | Mobile number or landline number.\r\nThe phone number specified by the interface will change the bound phone number in the agent settings.\r\nIf left empty, the system will use the bound phone number from the agent settings. |
+| reasonCode  | Busy Reason | number | The reason for being busy.\r\n2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
+| agentLoginQueueInfos  | Reception Skill Group | List&lt;QueueAgentCheckin&gt; | Yes | Detailed information of the skill group set for the currently signed-in agents |
 
 #### Skill Group Information QueueAgentCheckin
 | Attribute       |  Name    | Type   | Description |
@@ -418,7 +418,7 @@ For details, see the description of SobotCallResultBlock.
 
 | Attribute | Name | Type | Nullable | Description |
 | ------- | ------ | ------ | ---- | ------ |
-| reasonCode  | Busy Reason | number | No  | Login status displayed after setting busy.<br>2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
+| reasonCode  | Busy Reason | number | No  | Login status displayed after setting busy.\r\n2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
 
 #### Callback Function
 For details, see the SobotCallResultBlock description.
@@ -457,8 +457,8 @@ Attribute | Name | Type | Nullable | Description |
 | agentName  | Agent Name | String |  No  | Agent Name |
 | thisDN  | Extension Number | String | No | Bound extension account |
 | phone  | Phone Number | String |  No  | Bound phone number |
-|phoneTypes  | Answering Method |List<PhoneType> |  No  | Answering Method|
-|receptionQueues  | List of skill groups currently receiving |List<QueueAgentCheckin> |  No  | Query real-time skill group data that agents have checked into (currently active reception skill groups). |
+|phoneTypes  | Answering Method |List&lt;PhoneType&gt; |  No  | Answering Method|
+|receptionQueues  | List of skill groups currently receiving |List&lt;QueueAgentCheckin&gt; |  No  | Query real-time skill group data that agents have checked into (currently active reception skill groups). |
 
 
 #### Callback Function
@@ -482,7 +482,7 @@ Attribute | Name | Type | Nullable | Description |
 | agentName  | Agent Name | String |  No  | Agent Name |
 |ext  | Extension Number | String | No | Bind extension account |
 | phone  | Phone Number | String |  No  | Bound phone number |
-|phoneTypes  | Answering Method |List<PhoneType> |  No  | Collection of Answering Methods|
+|phoneTypes  | Answering Method |List&lt;PhoneType&gt; |  No  | Collection of Answering Methods|
 
 
 #### Callback Function
@@ -501,7 +501,7 @@ For details, see the SobotCallResultBlock description.
 #### Return Value
 | Attribute | Name | Type | Nullable | Description |
 | ------- | ------ | ------ | ---- | ------ |
-| data  | Extension information array | List<Ext> | No | Extension set information |
+| data  | Extension information array | List&lt;Ext&gt; | No | Extension set information |
 
 >Ext Description
 
@@ -538,7 +538,7 @@ See the description of SobotCallResultBlock for details.
 #### Return Value
 | Attribute | Name | Type | Nullable | Description |
 | ------- | ------ | ------ | ---- | ------ |
-| data  | Busy status array |List<AgentBusyStatus> |  No  | Collection of busy reasons |
+| data  | Busy status array |List&lt;AgentBusyStatus&gt; |  No  | Collection of busy reasons |
 
 > AgentBusyStatus
 
@@ -565,7 +565,7 @@ For details, see the SobotCallResultBlock description.
 ### Return Value
 | Attribute | Name | Type | Nullable | Description |
 | ------- | ------ | ------ | ---- | ------ |
-| data  | The skill group currently served by the agent | List<QueueAgentCheckin> |  No  | Skill information collection |
+| data  | The skill group currently served by the agent | List&lt;QueueAgentCheckin&gt; |  No  | Skill information collection |
 
 #### Callback Function
 For details, see the SobotCallResultBlock description.
@@ -617,9 +617,9 @@ For details, see the SobotCallResultBlock description.
 | --------- | ------ | ------ | ---- | -------------------------- |
 | otherDN   | Customer Number | string | No | Customer number displayed in the UI. For example: 135XXXXX5678; 13512345678; |
 | privacyNumber | Customer number encryption | string | Yes | Supports encrypted number outbound calls; Example: XFHAOWHFEFLASJLKWJLD; |
-| ANI   | Specify the caller ID number on the customer side | string | Yes | A valid number within the enterprise data permission range. It does not need to be within the agent's data permission settings.<br>When not empty, the system uses this number to call customers. All data set in the agent's outbound routing will become invalid.<br>When both the specified caller ID number and the specified caller ID scheme code on the customer side are empty, the system uses the rules and numbers set in the <outbound routing> for agents to make calls. |
-| outboundPlanCode | Specified customer-side outward number plan code | string | Yes | A valid dynamic outward number plan within the scope of enterprise data permissions. It does not need to be within the data permission range set for agents.<br>When the specified customer-side outward number is not empty, the specified customer-side outward number plan code must be empty.<br>When it is not empty, the system uses this plan to query numbers for outbound calls. All data set in the agent's outbound call routing will be invalid.<br>When both the specified customer-side outward number and the specified customer-side outward number plan code are empty, the system uses the rules and numbers set in the <Outbound Call Routing> by the agent. |
-| userData | Custom data | object | Yes | This value will be returned during phone events.<br>This value will be stored in call records.<br>Requires encodeURIComponent encoding. |
+| ANI   | Specify the caller ID number on the customer side | string | Yes | A valid number within the enterprise data permission range. It does not need to be within the agent's data permission settings.\r\nWhen not empty, the system uses this number to call customers. All data set in the agent's outbound routing will become invalid.\r\nWhen both the specified caller ID number and the specified caller ID scheme code on the customer side are empty, the system uses the rules and numbers set in the `<outbound routing> `for agents to make calls. |
+| outboundPlanCode | Specified customer-side outward number plan code | string | Yes | A valid dynamic outward number plan within the scope of enterprise data permissions. It does not need to be within the data permission range set for agents.\r\nWhen the specified customer-side outward number is not empty, the specified customer-side outward number plan code must be empty.\r\nWhen it is not empty, the system uses this plan to query numbers for outbound calls. All data set in the agent's outbound call routing will be invalid.\r\nWhen both the specified customer-side outward number and the specified customer-side outward number plan code are empty, the system uses the rules and numbers set in the Outbound Call Routing by the agent. |
+| userData | Custom data | object | Yes | This value will be returned during phone events.\r\nThis value will be stored in call records.\r\nRequires encodeURIComponent encoding. |
 
 #### Callback Function
 For details, see the SobotCallResultBlock description.
@@ -745,7 +745,7 @@ NSString *type = [SobotCallOpenApi searchPlayCategory];
 
 | Attribute    | Name   | Type   | Description |
 | ------- | ------ | ------ | ---- |
-| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback <br> Receiver Mode AVAudioSessionCategoryPlayAndRecord |
+| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback \r\n Receiver Mode AVAudioSessionCategoryPlayAndRecord |
 
 
 ###  Set Sound Playback Type
@@ -768,7 +768,7 @@ Switch between the earpiece and speaker.
 
 | Attribute    | Name   | Type   | Description |
 | ------- | ------ | ------ | ---- |
-| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback <br> Receiver Mode AVAudioSessionCategoryPlayAndRecord |
+| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback \r\n Receiver Mode AVAudioSessionCategoryPlayAndRecord |
 
 #### Callback Function
 For details, see the SobotCallResultBlock description.
@@ -922,7 +922,7 @@ See the description of SobotCallResultBlock for more details.
 | ------- | ----- | ------- | ---- |
 | code  | Code  | string  | 1: Enterprise number pool random matching; 2: Dynamic outbound number plan matching; 3: Agent number pool assignment. |
 | name   | Name | string  | Name. |
-| hasSet | Is Default | boolean  | Only 1 item in the collection is default data.<br> true: default display rule; false: non-default display rule. |
+| hasSet | Is Default | boolean  | Only 1 item in the collection is default data.\r\n true: default display rule; false: non-default display rule. |
 
 > Table 2 explicitSchema Dynamic Externally Visible Plan Array Description
 
@@ -930,7 +930,7 @@ See the description of SobotCallResultBlock for more details.
 | ------- | ----- | ------- | ---- |
 | code  | Code  | string  | Plan ID |
 | planName   | Name | string  | Name. |
-| hasSet | Is Default | boolean  | Only one data item in the collection is the default data.<br> true: default plan; false: non-default plan. |
+| hasSet | Is Default | boolean  | Only one data item in the collection is the default data.\r\n true: default plan; false: non-default plan. |
 
 > Table 3 explicitNumbers Description of the explicit number array
 
@@ -938,7 +938,7 @@ See the description of SobotCallResultBlock for more details.
 | ------- | ----- | ------- | ---- |
 | number  | Display number  | string  | Trunk number. |
 | nickName   | Number Alias | string  | Alias for the relay number. |
-| hasSet | Is Default | boolean  | Only one data in the collection is default data.<br> true: Default display number; false: Non-default display number. |
+| hasSet | Is Default | boolean  | Only one data in the collection is default data.\r\n true: Default display number; false: Non-default display number. |
 
 #### Modify the Outbound Routing Rules for Seats
 1. The return values of this interface will keep adding attributes. Please use the correct compatible coding method to ensure that the calling code will not throw errors when return value attributes are added!
@@ -965,9 +965,9 @@ See the description of SobotCallResultBlock for more details.
 
 | Attribute | Name | Type | Nullable | Description |
 | --------- | ------ | ------ | ---- | ---------- |
-| explicitRule | Explicit Rule | string | No | Must be within the data permission range of the agent's explicit rule in <Outbound Route>.<br> 1: Random match from enterprise number pool; 2: Match with dynamic explicit number scheme; 3: Specify from agent number pool. |
-| explicitCode | Dynamic Display Scheme Code | string | Yes | Must be within the data permission range of the agent's dynamic display scheme in <Outbound Route>. <br> Required when display rule=Dynamic Display Number Scheme Match. |
-| explicitNumber | Outbound Caller ID | string | Yes | Must be within the personal number pool data permission range of the agent in <Outbound Routing>. <br> When the outbound rule = Agent Number Pool Specified, this field cannot be empty. |
+| explicitRule | Explicit Rule | string | No | Must be within the data permission range of the agent's explicit rule in `<Outbound Route>`.\r\n 1: Random match from enterprise number pool; 2: Match with dynamic explicit number scheme; 3: Specify from agent number pool. |
+| explicitCode | Dynamic Display Scheme Code | string | Yes | Must be within the data permission range of the agent's dynamic display scheme in `<Outbound Route>`. \r\n Required when display rule=Dynamic Display Number Scheme Match. |
+| explicitNumber | Outbound Caller ID | string | Yes | Must be within the personal number pool data permission range of the agent in `<Outbound Routing>` . \r\n When the outbound rule = Agent Number Pool Specified, this field cannot be empty. |
 
 
 #### Callback Function Return Value
@@ -989,7 +989,7 @@ See the SobotCallResultBlock description for details.
 | ------- | ----- | ------- | ---- |
 | code  | Code  | string  | 1: Enterprise number pool random match; 2: Dynamic outbound number scheme match; 3: Agent number pool specified. |
 | name   | Name | string  | Name. |
-| hasSet | Is Default | boolean  | Only one data item in the collection is default data.<br> true: Default display rule; false: Non-default display rule. |
+| hasSet | Is Default | boolean  | Only one data item in the collection is default data.\r\n true: Default display rule; false: Non-default display rule. |
 
 > Table 2 explicitSchema Dynamic External Schema Array Description
 
@@ -997,7 +997,7 @@ See the SobotCallResultBlock description for details.
 | ------- | ----- | ------- | ---- |
 | code  | Code  | string  | Plan ID|
 | planName   | Name | string  | Name. |
-| hasSet | Is Default | boolean  | Only one data item in the collection is the default data.<br> true: default plan; false: non-default plan. |
+| hasSet | Is Default | boolean  | Only one data item in the collection is the default data.\r\n true: default plan; false: non-default plan. |
 
 > Table 3 explicitNumbers Description of the explicit number array
 
@@ -1005,7 +1005,7 @@ See the SobotCallResultBlock description for details.
 | ------- | ----- | ------- | ---- |
 | number  | Display number  | string  | Trunk number. |
 | nickName   | Number Alias | string  | Alias for the trunk number. |
-| hasSet | Is Default | boolean  | Only one data in the set is default data.<br> true: Default display number; false: Non-default display number. |
+| hasSet | Is Default | boolean  | Only one data in the set is default data.\r\n true: Default display number; false: Non-default display number. |
 
 
 

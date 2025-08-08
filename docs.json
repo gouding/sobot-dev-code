@@ -32,8 +32,8 @@
                   {
                     "group":"Channel Access",
                     "pages":[
-                      "build-apps/apps/iOS/Channel Access/V1",
-                      "build-apps/apps/iOS/Channel Access/V6"
+                      "build-apps/apps/iOS/ChannelAccess/V1",
+                      "build-apps/apps/iOS/ChannelAccess/V6"
                     ]
                   },
                   "build-apps/apps/iOS/iOS SDK",

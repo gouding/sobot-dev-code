@@ -16,7 +16,7 @@
 |:----|:----|:----|
 | SobotKit.framework   | Sobot SDK UI Code Library   |    |
 | SobotCommon.framework   | Sobot SDK Basic Component Library   |    |
-| SobotChatClient.framework   | Core business code library of Sobot SDK   |    |
+| SobotChatClient.framework   | Core business code library of ZhiChi SDK   |    |
 | SobotKit.bundle   | SDK resource library, including image files, multilingual files, and colors   |    |
 | ZCSobotApi.h   | This file provides access functions   |    |
 | ZCLibInitInfo.h   | Basic function parameter class (user information, reception mode, skill group, etc.)   |    |
@@ -30,13 +30,12 @@
 
 ## Integration Method
 
----
 ### Manual Integration
 
-Download link: [iOS_SDK_V6](https://shimo.im/docs/XKq4252aNNc8n9AN)
+Download link: [iOS_SDK_V1](https://shimo.im/docs/XKq4252aNNc8n9AN)
 
 
-Unzip [iOS_SDK], and add the necessary files SobotKit.framework, SobotChatClient.framework, SobotCommon.framework, and SobotKit.bundle to your project. The implementation of the Sobot iOS_SDK relies on some system frameworks. When developing an application, these frameworks need to be added to the project. First, the developer should click the project name on the right side of the project. Then, on the right side of the project name, select TARGETS -> Build Phases -> Link Binary With Libraries. After expanding Link Binary With Libraries, click the + below to add the following dependencies:
+Unzip [iOS_SDK], and add the necessary files SobotKit.framework, SobotChatClient.framework, SobotCommon.framework, and SobotKit.bundle to your project. The implementation of the ZhiChi iOS_SDK relies on some system frameworks. When developing an application, these frameworks need to be added to the project. First, the developer should click the project name on the right side of the project. Then, on the right side of the project name, select TARGETS -> Build Phases -> Link Binary With Libraries. After expanding Link Binary With Libraries, click the + below to add the following dependencies:
 
 * AVFoundation.framework
 * AssetsLibrary.framework
@@ -51,12 +50,10 @@ Unzip [iOS_SDK], and add the necessary files SobotKit.framework, SobotChatClient
 Add the following to your Podfile:
 
 ```js  
-// Standard Version:
-
----
-pod 'SobotChatClient'
-// E-commerce Version:
-pod 'SobotChatClientMall'
+// Basic:
+pod 'SobotKit'
+// E-commerce:
+pod 'SobotPlatform'
 ```
 
 
@@ -99,11 +96,10 @@ Domain Name Description:
       * For other cases, please refer to the correct configuration of the domain name for obtaining the appkey.
 
 
-[Note: Before starting the Sobot SDK, you must call the initialization interface initSobotSDK. Otherwise, the SDK will fail to start.]
+[Note: Before starting the ZhiChi SDK, you must call the initialization interface initSobotSDK. Otherwise, the SDK will fail to start.]
 
 Example code:
 
----
 
 ```js
 
@@ -143,9 +139,10 @@ NSLog(@"Initialization completed %@", object);
 ```
 
 ###  Launch Customer Inquiry Page
-Customize the UI style and use Sobot for customer inquiries.
+Customize the UI style and use ZhiChi for customer inquiries.
 
 Example code:
+
 
 
 ```js
@@ -378,7 +375,7 @@ User-defined data, custom key
 
 ```js
 //Custom user data
-LibInitInfo.params = @{@"Nickname":@"I am the Sobot customer service representative"};
+LibInitInfo.params = @{@"Nickname":@"I am the ZhiChi customer service representative"};
 
 ```
 
@@ -439,7 +436,7 @@ InitInfo.multi_params = @{@"customField15619769556831":@"Display xxyyyzzz1032"};
 
 /**
 *User tags, multiple fields separated by commas;
-User tags can be edited in the Sobot management console (System Settings > Custom Fields > Customer Fields). Obtain the ID or name corresponding to the user tag.
+User tags can be edited in the ZhiChi management console (System Settings > Custom Fields > Customer Fields). Obtain the ID or name corresponding to the user tag.
  **/
 @property (nonatomic,copy) NSString *user_label;
 
@@ -482,7 +479,7 @@ YES, Test Environment
 
 /**
 Automatic reminder messages
-Description: If you turn on the automatic reminder messages, when you are not on the Sobot chat page, all messages will be actively displayed as local notifications.
+Description: If you turn on the automatic reminder messages, when you are not on the ZhiChi chat page, all messages will be actively displayed as local notifications.
 This reminder is a local message push. It is unrelated to APNS and is only a notification for local IM messages not on the chat page.
 */
 @property (nonatomic,assign) BOOL autoNotification;
@@ -496,7 +493,7 @@ Explanation: If set to YES, the channel will close immediately after exiting the
 
 /**
 Get the number of unread messages
-@return Number of unread messages (entering the Sobot chat page will clear them)
+@return Number of unread messages (entering the ZhiChi chat page will clear them)
 */
 -(int) getUnReadMessage;
 ```
@@ -625,8 +622,8 @@ Network Listening ZCNotification_NetworkChange
 //        NSLog(@"Current number of messages: %d \n %@", unRead, obj);
     };
     
-// Close the channel, clear memory, and exit the Sobot customer service (If the current status is human consultation, the customer will go offline; if it is robot status, the current session will be directly interrupted, and the next entry will start a new session).
-// Note: After calling this method, you will not receive offline messages unless you reactivate it by re-entering the Sobot SDK.
+// Close the channel, clear memory, and exit the ZhiChi customer service (If the current status is human consultation, the customer will go offline; if it is robot status, the current session will be directly interrupted, and the next entry will start a new session).
+// Note: After calling this method, you will not receive offline messages unless you reactivate it by re-entering the ZhiChi SDK.
 // isClosePush:YES, means to close push; NO for offline users, but they can still receive push notifications
 +(void) closeAndoutZCServer:(BOOL) isClosePush; 
 //Example
@@ -848,7 +845,7 @@ kitInfo.cusMoreArray = arr;
 ```
 Simulate custom "+" click send event:  
 Return YES to indicate event interception, and let the user handle it manually.
-Returning NO means the event is not intercepted and will be handled internally by the Sobot SDK.
+Returning NO means the event is not intercepted and will be handled internally by the ZhiChi SDK.
 
 ```js
 
@@ -986,7 +983,7 @@ Not required, the session will automatically stay connected and disconnect.
 
 ```js
 
-/// Close the channel, clear memory, exit Sobot customer service, and remove push notifications.
+/// Close the channel, clear memory, exit ZhiChi customer service, and remove push notifications.
 /// @param isClosePush YES to close push; NO for offline users, but able to receive push notifications
 [ZCSobotApi outCurrentUserZCLibInfo:NO];
 
@@ -1155,7 +1152,7 @@ NSLog(@"Click returned %@, %zd", obj, type);
 
 2. After enabling the APP "Security Key" function, the SDK channel must pass the partnerid parameter. When integrating, add the parameters "sign" and "create_time". Here, sign = "MD5(app_key + partnerid + secret + create_time)", createTime is a Unix millisecond timestamp; secret is a 32-character string, and create_time is a millisecond-level timestamp.
 
-3. After passing parameters, Sobot will decrypt the sign and verify whether the passed partnerid matches the partnerid in the sign. If they match, the system will connect to Sobot normally. If they do not match, the connection will fail. If the customer does not pass the partnerid or sign, it will be considered an illegal user, and the connection will fail. If the create_time differs from the current time by more than 5 minutes, it will be considered an illegal user, and the connection will fail.
+3. After passing parameters, ZhiChi will decrypt the sign and verify whether the passed partnerid matches the partnerid in the sign. If they match, the system will connect to ZhiChi normally. If they do not match, the connection will fail. If the customer does not pass the partnerid or sign, it will be considered an illegal user, and the connection will fail. If the create_time differs from the current time by more than 5 minutes, it will be considered an illegal user, and the connection will fail.
 
 4. The function of enabling and disabling the "Security Key" in the APP takes effect in real time.
 
@@ -1185,7 +1182,7 @@ _libInitInfo.sign = [self getSign];
 ## Parameter Description
 
 ### ZCKitInfo Class Description (UI Related Configuration)
-You can reset every time you start the Sobot page.
+You can reset every time you start the ZhiChi page.
 
 #### 1. UI Logic Related
 | Attribute Name | Data Type | Description | Remarks |
@@ -1375,7 +1372,7 @@ This object will be automatically created after initialization. You can use it d
 | Attribute Name | Data Type | Description | Notes |
 |:----|:----|:----|:----:|
 | margs   | NSDictionary   | Extended fields for hotspot guidance questions   |    |
-| transferaction   | NSArray   | Transfer to human agent, specify skill group overflow   actionType: Action type: to_group: Transfer to specified skill group   optionId: Overflow setting when specifying a skill group: 3: Overflow, 4: No overflow.   deciId: The specified skill group.   spillId: Overflow condition when specifying a customer service group: 4: No agents online in the skill group, 5: All agents in the skill group are busy, 6: Skill group is off duty, 7: Intelligent judgment eg:[{"actionType":"to_group","optionId":"3","deciId":"162bb6bb038d4a9ea018241a30694064","spillId":"7"}, {"actionType":"to_group","optionId":"4","deciId":"a457f4dfe92842f8a11d1616c1c58dc1"}]  |    |
+| transferaction   | NSArray   | Transfer to human agent, specify skill group overflow. actionType: Action type: to_group: Transfer to specified skill group. optionId: Overflow setting when specifying a skill group: 3: Overflow, 4: No overflow. deciId: The specified skill group. spillId: Overflow condition when specifying a customer service group: 4: No agents online in the skill group, 5: All agents in the skill group are busy, 6: Skill group is off duty, 7: Intelligent judgment. Example: `[{"actionType":"to_group","optionId":"3","deciId":"162bb6bb038d4a9ea018241a30694064","spillId":"7"}, {"actionType":"to_group","optionId":"4","deciId":"a457f4dfe92842f8a11d1616c1c58dc1"}]`  |    |
 | summary_params   | NSDictionary   | Custom fields for transferring to human agent  key: ```@{@"customField15619769556831":@"Display xxyyyzzz1032"};```  |    |
 | multi_params   | NSDictionary   | Multi-turn conversation custom field   |    |
 | good_msg_type   | int   | Custom product order info type; 0 Do not send 1 Send to bot 2 Send to human agent 3 Send to both bot and human agent |    |
@@ -1387,7 +1384,6 @@ This object will be automatically created after initialization. You can use it d
 
 ## Frequently Asked Questions
 
----
 FAQ: Please [click the link](https://global.sobot.com/chat/h5/v2/index.html?sysnum=f8c1ea7f7ed44fd3b09604566ddc0b44&visit_start_time=1675855104890&visitTitle=Sobot%20%7C%20Customer%20service%20software_call%20center_livechat_chatbot&top_bar_flag=1&uid=1da53c20a0be75c31923c06d1429ef58&cid=da76dda4d2d3400b9fbfea67bedc58f6&channelid=2) to access the intelligent robot and enter your question.
 
 
@@ -1397,9 +1393,9 @@ FAQ: Please [click the link](https://global.sobot.com/chat/h5/v2/index.html?sysn
 
 ## Source Code and Demo
 
-Wisdom Tooth iOS_SDK [UI Source Code](https://github.com/ZCSDK/Sobot_iOS_SDK_V6Source);
-Wisdom Tooth SDK Function Experience Demo [APP Download](https://apps.apple.com/us/app/id1507872824) 
+Sobot iOS_SDK [UI source code](https://github.com/ZCSDK/sobotKit_UI_iOS);  
+Sobot SDK function experience Demo [APP download](https://apps.apple.com/us/app/id1507872824)；  
 
 
 ### Privacy and Permissions
-[《Sobot Technology SDK Personal Information Collection and Usage Statement》](https://www.sobot.io/sdk-clause)
+[Description of Sobot SDK's Collection and Use of Personal Information](https://www.sobot.io/sdk-clause)
