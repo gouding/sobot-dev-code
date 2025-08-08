@@ -29,7 +29,20 @@
               {
                 "group": "iOS",
                 "pages": [
-                  "build-apps/apps/markdown"
+                  {
+                    "group":"Channel Access",
+                    "pages":[
+                      "build-apps/apps/iOS/Channel Access/V1",
+                      "build-apps/apps/iOS/Channel Access/V6"
+                    ]
+                  },
+                  "build-apps/apps/iOS/iOS SDK",
+                  "build-apps/apps/iOS/Agent Component SDK",
+                  "build-apps/apps/iOS/Call",
+                  "build-apps/apps/iOS/Order",
+                  "build-apps/apps/iOS/Push",
+                  "build-apps/apps/iOS/Telemarketing"
+                 
                 ]
               },
               {

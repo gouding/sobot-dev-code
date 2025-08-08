@@ -1,0 +1,309 @@
+## iOS Push SDK
+
+Wisdom Tooth Push SDK, if you have already integrated Umeng Push, there is no need to use this SDK. You can directly focus on the ***3. Bind Alias*** section. Binding an alias can still use Umeng's method to bind directly.
+
+
+Relevant Restrictions and Precautions
+1. Enable network request permission
+2. The App enables the push notification function
+3. Integrate the Umeng Push SDK
+
+
+## Integration Method
+##### Manual Integration
+
+
+
+Download link: [iOS_Push_SDK](https://img.sobot.com/mobile/sdk/iOS_PUSH_SDK.zip)
+
+Unzip [iOS_SDK], and add the necessary files SobotPush.framework and the Umeng push SDK integration package to your project. The ZhiChi push SDK is based on the implementation of the Umeng SDK and relies on some system frameworks. When developing the app, these frameworks need to be added to the project. First, the developer clicks the project name on the right side of the project, then selects TARGETS -> Build Phases -> Link Binary With Libraries in sequence on the right side of the project name. After expanding Link Binary With Libraries, click the "+" below to add the following dependencies:
+
+* CoreAudio.framework
+* libz.tbd
+* SystemConfiguration.framework
+* libsqlite3.tbd
+* UserNotifications.framework
+* CoreTelephony.framework
+
+#####  File Description
+
+
+**The SDK includes SobotPush.framework, SobotDemo, and Doc-related documentation.**
+
+| File Name   | Description   | Notes |
+|:----|:----|:----|
+| SobotPush.framework   | Sobot push interface code library   | Not required    |
+| SobotPushApi.h   | This file provides access functions   | Not required   |
+
+## Quick Start
+
+
+### Step 1 Initialization
+Initialize Umeng Push
+The main calling code is as follows:
+
+
+
+Interface:
+
+```js
+[SobotPushApi getUMVersionWithOptions:launchOptions delegate:self umKey:@"The key applied for on the Umeng platform"];
+
+```
+Parameter:  
+
+| Parameter Name   | Type   | Description   |
+|:----|:----|:----|
+| launchOptions   | NSDictionary   | The system's launchOptions startup message parameter is used to handle information related to users opening the app through messages. |
+| delegate   | NSString   | Agent   |
+| umKey   | NSString   | Appkey applied by the developer on the Umeng official website |
+
+Example code:
+
+
+```js
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [self.window makeKeyWindow];   
+    [SobotPushApi getUMVersionWithOptions:launchOptions delegate:self umKey:@"56cd1f26e0f55a6ae7000b3f"];
+    [UNUserNotificationCenter currentNotificationCenter].delegate = self;
+    [self registerAPNS];
+    return YES;
+}
+
+```
+
+### Step 2 Permission Settings
+Permissions to be added
+
+```js
+<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+```
+
+### Step 3 Register Push Notification
+###### 1. Register for remote push notifications
+Register for remote push notifications at
+- Add push notification registration code in the `(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions` method
+Example code
+
+
+
+```js
+
+If (@available(iOS 10.0, *)) { // Above iOS10
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            
+        }];
+} else {// Above iOS8.0
+        UIUserNotificationSettings *setting = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert categories:nil];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:setting];
+    }
+    
+```
+
+###### 2. Register the deviceToken of this device with Umeng
+Register the deviceToken of this device with Umeng to facilitate sending Push messages.
+
+Example
+
+```js
+
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken{
+NSLog(@"Get Token---Token--%@", deviceToken);
+    [SobotPushApi registerDeviceToken:deviceToken];
+}
+
+```
+
+###### 3. Bind Alias
+Bind an alias to a device (including account and platform type), and unbind the device that this alias was previously bound to. Note: The prerequisite for adding an Alias is that the device_token has been successfully obtained; otherwise, it will fail (kUMessageErrorDependsErr).
+
+After logging in, users can set aliases in three ways: [**You can directly use the Umeng API to bind aliases**]
+1. Connection ID  partnerId
+2.Email    email
+3.Phone    tel
+Select one of the methods to set an alias. Call it after the app logs in successfully and registers the device's deviceToken with Umeng.
+Example
+
+```js
+
+[SobotPushApi setAlias:sobotConvertToString(aliasTf.text) type:@"partnerId" response:^(id responseObject, NSError *error) {
+            NSLog(@"responseObject=%@ error=%@",responseObject,error.localizedDescription);
+            if (sobotConvertToString(error.localizedDescription).length >0) {
+                [[SobotToast shareToast] showToast:error.localizedDescription duration:2 position:SobotToastPositionCenter];
+            }else if ([responseObject isKindOfClass:[NSDictionary class]] && !sobotIsNull(responseObject)){
+                NSString *successStr = sobotConvertToString([responseObject objectForKey:@"success"]);
+                [[SobotToast shareToast] showToast:successStr duration:2 position:SobotToastPositionCenter];
+            }
+            
+        }];
+
+```
+
+
+## Function Description
+
+
+### Click Push Message Event
+
+Click the push notification to go to the specified page in the app or open the link.
+
+```js
+
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^_Nonnull __strong)())completionHandler{
+    NSDictionary *userInfo = response.notification.request.content.userInfo;
+    NSString *showMsg = [self dictionaryToJson:userInfo];   
+    NSString *sobot_chat_page = sobotConvertToString([userInfo objectForKey:@"sobot_chat_page"]);
+    NSString *sobot_chat_url = sobotConvertToString([userInfo objectForKey:@"sobot_chat_url"]);
+    // sobot_chat_url identifies the link to be opened
+    // sobot_chat_page identifies the page to open
+    // sobot_chat_url and sobot_chat_page will not appear at the same time.
+    
+//    if (sobot_chat_page.length >0) {
+//        if (self.zcPageType != ZCPageStateTypeChatLoadFinish) {
+//            [self openSDK];
+//        }
+//    }else{
+//        if (sobot_chat_url.length >0) {
+//            [[UIApplication sharedApplication] openURL:sobotConvertToString(sobot_chat_url) options:0 completionHandler:^(BOOL success) {
+//                
+//            }];
+//        }
+//    }
+    NSLog(@"Userinfo %@",userInfo);
+}
+    
+```
+
+### iOS Rich Text Push Notifications
+
+If you want to add images to push notifications, you can achieve this by adding a Notification Service Extension.
+
+First, we create a Notification Service Extension. The specific steps are as follows: File——>New——>Target——->Notification Service Extension——->Name the created Notification Service Extension
+
+Copy the following code into the NotificationService.m file, or you can write related code by yourself.
+
+```js
+ 
+-(void)didReceiveNotificationRequest:(UNNotificationRequest*)request
+                   withContentHandler:(void(^)(UNNotificationContent*_Nonnull))contentHandler {
+    self.contentHandler = contentHandler;
+    self.bestAttemptContent =[request.content mutableCopy];
+    //[modified] This is a marker that can modify the content sent from the server. For testing purposes only.
+    self.bestAttemptContent.title =[NSString stringWithFormat:@"%@ [modified]",self.bestAttemptContent.title];
+ 
+    NSDictionary*apsDic =[request.content.userInfo objectForKey:@"aps"];
+    NSString*attachUrl =[apsDic objectForKey:@"sobot_chat_big_img"];
+ 
+    NSString*category =[apsDic objectForKey:@"category"];
+    self.bestAttemptContent.categoryIdentifier = category;
+ 
+    NSURLSession*session =[NSURLSession sharedSession];
+    NSURL *url =[NSURL URLWithString:attachUrl];
+    NSURLSessionDownloadTask*downloadTask =[session downloadTaskWithURL:url
+                                                        completionHandler:^(NSURL *_Nullable location,
+    NSURLResponse*_Nullable response,
+    NSError*_Nullable error){
+    NSString*caches =[NSSearchPathForDirectoriesInDomains(NSCachesDirectory,NSUserDomainMask, YES) lastObject];
+    NSString*file =[caches stringByAppendingPathComponent:response.suggestedFilename];
+    NSFileManager*mgr =[NSFileManager defaultManager];
+    [mgr moveItemAtPath:location.path toPath:file error:nil];
+ 
+    if(file &&![file  isEqualToString:@""])
+    {
+      UNNotificationAttachment*attch=[UNNotificationAttachment attachmentWithIdentifier:@"photo"
+                                                                                                                                                URL:[NSURL URLWithString:[@"file://" stringByAppendingString:file]]
+                                                                                                                                            options:nil
+                                                                                                                                              error:nil];
+       if(attch)
+       {
+          self.bestAttemptContent.attachments =@[attch];
+       }
+    }
+    self.contentHandler(self.bestAttemptContent);
+   }];
+  [downloadTask resume];
+ 
+}
+- (void)downloadAndSave:(NSURL *)fileURL handler:(void (^)(NSString *))handler {
+    // Here, you need to use a system network request to download the image.
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDownloadTask *task = [session downloadTaskWithURL:fileURL completionHandler:^(NSURL * _Nullable location, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSString *localPath = nil;
+        if (!error) {
+// Temporary folder path, images will be automatically deleted when the APP is not running, and will not occupy memory.
+            NSString *localURL = [NSString stringWithFormat:@"%@/%@", NSTemporaryDirectory(), fileURL.lastPathComponent];
+            if ([[NSFileManager defaultManager] moveItemAtPath:location.path toPath:localURL error:nil]) {
+                localPath = localURL;
+            }
+        }
+        handler(localPath);
+    }];
+    [task resume];
+}
+
+```
+*Notice*
+1. Self.bestAttemptContent.title = [NSString stringWithFormat:@”%@ [modified]”, self.bestAttemptContent.title]; can be used to test if the project has called the notification service.
+2. The image size cannot exceed 10M, and the content link must be https.
+3. Add network permissions to the info.plist file in the Notification Service Extension project.
+<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+4. When testing push notifications, select NotificationService Target for packaging.
+5. Test push needs to be packaged in adHoc format for verification.
+
+
+### Custom Push UI
+
+If you want to modify the push UI, you can add Notification Content Extension to implement a custom UI.
+First, we create a Notification Content Extension. The specific steps are as follows: File——>New——>Target——->Notification Content Extension——->Name the created Notification Content Extension
+
+Copy the code below into the NotificationViewController.m file, and add custom UI code.
+Example
+
+
+```
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any required interface initialization here.
+    self.iconImg = [[UIImageView alloc]init];
+    self.iconImg.frame = CGRectMake(0, 0, self.view.frame.size.width, 200);
+    [self.view addSubview:self.iconImg];
+}
+
+- (void)didReceiveNotification:(UNNotification *)notification {
+    self.label.text = notification.request.content.body;
+//    NSString * lastComment = notification.request.content.userInfo[@"last-comments"];
+    //Attachment extraction
+    UNNotificationAttachment * attachment = notification.request.content.attachments[0];
+    if ([attachment.URL startAccessingSecurityScopedResource]) {
+        NSData *imageData = [NSData dataWithContentsOfURL:attachment.URL];
+        [self.iconImg setImage:[UIImage imageWithData:imageData]];
+        [attachment.URL stopAccessingSecurityScopedResource];
+    }
+    if ([notification.request.content.body isEqualToString:@""]) {
+        self.iconImg.hidden = YES;
+    } else {
+        self.label.text = notification.request.content.body;
+    }
+}
+
+```
+
+
+## Umeng Integration Document
+
+
+####  [Umeng Push SDK_iOS Integration Document](https://developer.umeng.com/docs/67966/detail/66734)
+## Privacy and Permissions
+
+
+[《ZhiChi Technology SDK Personal Information Collection and Usage Statement》](https://www.zhichi.com/docs/clause/sdk-clause.html)

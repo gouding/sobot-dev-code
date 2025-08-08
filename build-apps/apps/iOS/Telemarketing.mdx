@@ -1,0 +1,1114 @@
+## Telemarketing Capability (iOS-SDK)
+
+ZhiChi Customer Service provides enterprises with a complete set of intelligent customer service solutions. The ZhiChi Telemarketing SDK supports all telemarketing-related functions. By simply providing the account to be used, tasks like telemarketing, outbound calls, call monitoring, and call recording can be completed.
+
+The ZhiChi telemarketing SDK has the following features:   
+
+* Provide the complete process of login - use - logout.
+* There are 2 types of login modules: external login with token synchronization and regular username/password login.
+* Supports basic functions such as call phone registration, call record inquiry, call monitoring, and agent status switching.
+
+![Image](https://developer.sobot.io/en/images/online/sdk/sdk-tm-home-01.png)
+
+Relevant restrictions and precautions:  
+1. The new version of the iOS SDK supports iOS 11 and above, and is compatible with both iPhone and iPad.
+
+2. IOS requires microphone permission; otherwise, the call function cannot work.
+
+3. The SDK cannot be used at the same time as the call function in the Zhichi Customer Service APP and the call function in the Zhichi PC workstation.
+
+### Process Description
+
+
+##### Integration Process Diagram
+![Image](https://developer.sobot.io/en/images/online/sdk/sdk-call-home-02.png)
+#####  File Description
+
+
+**The SDK includes (SobotTelemarketingSDK.framework, SobotCallLib.framework, SobotCommon.framework, SobotCall.bundle, and SobotCommon.bundle), SobotTMDemo, and Doc-related documentation.**
+
+| File   |Description|
+|:----|:----|:----|:----|
+| SobotTelemarketingSDK.framework   | Sobot Telemarketing SDK Code Library   |
+| SobotCommon.framework   | Base dependency library for ZhiChi code   |
+| SobotCallLib.framework   | janus and webstomp dependency libraries  |
+| SobotCommon.bundle    | Resource library for basic toolkits, including image files, multilingual files, and colors   |
+| SobotCall.bundle    | SDK resource library, including image files, multilingual files, and colors   |
+| SobotTMApi.h   | This file provides access functions  |
+| SobotTMParameter.h  | Basic UI configuration parameter class   |
+| SobotCallCacheEntity.h  | Basic function parameter class (domain name, color, language, display mode, etc.)   |
+| SobotTMHomeV6Controller.h | Telemarketing Entry Interface   |
+| SobotTMClient.h  | Basic Functions   |
+
+
+## Integration Method
+
+
+###  Manual Integration
+
+
+
+
+Download link: [iOS_CallTM](https://shimo.im/docs/loqeMjgX8WibpRqn)
+
+Unzip [iOS_SDK], and add the necessary files SobotTelemarketingSDK.framework, SobotCommon.framework, SobotCallLib.framework, SobotCommon.bundle, and SobotCall.bundle to your project.
+
+
+###  CocoaPods Integration
+Add the following to your Podfile:
+
+```
+// Use the latest version
+pod 'SobotTMSDK'
+
+```
+
+
+If the latest version cannot be found, please run the following command to update the CocoaPods repository:
+
+``` 
+pod repo update --verbose
+If you cannot update to the latest version, delete the index file and try again.
+rm ~/Library/Caches/CocoaPods/search_index.json
+
+```
+
+Clear pod cache:
+
+```
+Delete the pod folder in the code,
+pod cache clean SobotCallSDK
+Run pod install again
+```
+
+
+## Quick Start
+
+
+
+### Step 1 Permission Settings
+Permissions to be added
+
+```
+<key>NSMicrophoneUsageDescription</key>
+<string>Voice calls require access to your microphone permission</string>
+```
+
+### Step 2 Initialization and Domain Setup
+Domain Name Description:
+
+* The default SaaS platform domain name is: https://api.sobot.com.
+
+* If you are a Tencent Cloud service, please set it to: https://www.soboten.com.
+
+* If you are using a localized deployment, please use your own service domain name.
+
+Example code:
+
+
+```
+	SobotCallCacheEntity *config = [[SobotCallCacheEntity alloc] initWithBundleName:@"SobotCall"];
+    // General interface service address
+    config.openApiHost = @"https://api.sobot.com";
+    // Call interface service address
+    config.callApiHost = @"https://openapi.sobot.com";
+    // Agent Signaling Service
+    config.stompSocketUri = @"wss://openapi.sobot.com/v6.0.0/webmsg/cc-webmsg";
+    // janus message listening service
+    config.janusSocketUri = @"wss://rtc.sobot.com.cn/janus";
+   
+```
+
+Initialization parameters and invocation method: Set function-related attributes in the initialization information SobotCallCacheEntity; The initialization method runs locally without asynchronous requests and takes effect immediately after setting.
+
+The main calling code is as follows:
+
+
+[Note: Before starting the ZhiChi Telemarketing SDK, you must call the initialization interface initWithConfig. Otherwise, the SDK will fail to start.]
+
+Method:
+
+```
+/// Initialize Configuration
+/// @param config  SobotCallCacheEntity configuration class, domain name/internationalization/resources
+/// @param kitInfo SobotKitConfig configuration class
+/// @param resultBlock Initialization callback (NSInteger code, id _Nullable obj, NSString *_Nullable msg);
++(void)initWithConfig:(SobotCallCacheEntity *) config  kitInfo:(SobotTMParameter *)kitInfo result:(SobotTMResultBlock) resultBlock;
+
+```
+Parameter:  
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| config   | NSObject   |Yes| Basic software configuration, specifying domain name, resource name, language, etc.|
+| kitInfo   | NSObject  | Yes | UI related configuration |
+| resultBlock   | Block |  No | Initialization status callback, code=1 means success   |
+
+Example code:
+
+
+```
+SobotCallCacheEntity *config = [[SobotCallCacheEntity alloc] initWithBundleName:@"SobotCall"];
+    // Specify the bundle name
+    config.bundleName = @"SobotCall"; 
+    // Specify the path of the internationalization file in the bundle
+    config.languageTableName = @"SobotLocalizable";     
+    // Specify the internationalization file name
+    config.languagePathInBundle = @"Localizable"; 
+    // File name of the specified color in the bundle
+    config.colorTableName = @"SobotColor";
+    // Specify language
+    config.absoluetelanguage = @"zh-Hans";
+    
+    // General interface service address
+    config.openApiHost = @"https://api.sobot.com";
+    // Call interface service address
+    config.callApiHost = @"https://openapi.sobot.com";
+    // Agent signaling service
+    config.stompSocketUri = @"wss://openapi.sobot.com/v6.0.0/webmsg/cc-webmsg";
+    // janus message listening service
+    config.janusSocketUri = @"wss://rtc.sobot.com.cn/janus";
+    
+    SobotCallParameter *kitInfo = [[SobotCallParameter alloc]init];
+    kitInfo.showHomeBack = NO;
+    [SobotTMApi initWithConfig:config kitInfo:kitInfo result:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+
+    }];
+
+```
+
+### Step 3 Start the ZhiChi page
+
+Method 1: Use the method we provide to automatically complete login and redirect to the page.
+Method:
+
+```
+
+/// Launch SDK and enter the homepage of the Call SDK
+/// @param account  Account
+/// @param loginPwd Password
+/// @param vc Launch VC
+/// @param SobotTMResultBlock Callback result
++(void)startWithAcount:(NSString *)account password:(NSString *)loginPwd viewController:(UIViewController *)vc result:(SobotTMResultBlock) resultBlock;
+
+/// Add launch page
+/// token is not accessToken, account login returns the address, internal automatic judgment of new and old versions
++(void)startWithToken:(NSString *) token viewController:(UIViewController *) vc result:(SobotTMResultBlock) resultBlock;
+    
+    
+```
+Parameters
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| account   | NSString | Yes  | Customer service account |
+| loginPwd   | NSString  | Yes | Customer service account password |
+| vc   | UIViewController  | Yes | The vc that performs the jump |
+| resultBlock   | Block |  No | Execution result, code=1 means success |
+
+Example code:
+
+
+```
+
+[SobotTMApi startWithAcount:loginAccount password:password viewController:self result:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+}];
+
+```
+
+
+Method 2: Directly create SobotTMHomeV6Controller, complete the login by yourself and then redirect the page. You need to complete the login first, and then execute the redirection.
+Method:
+
+```
+
+/// Login
+/// @param account Account
+/// @param loginPwd Password
+/// @param SobotTMResultBlock Callback result
++(void)loginUser:(NSString *)account password:(NSString * )loginPwd result:(SobotTMResultBlock) resultBlock;
+
+/// Login (using token)
+/// @param account Account
+/// @param loginPwd Password
+/// @param token token
+/// @param SobotTMResultBlock Callback result
++(void)loginUser:(NSString *)account password:(NSString * )loginPwd  token:(NSString *) token  result:(SobotTMResultBlock) resultBlock;
+
+```  
+Parameter
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| account   | NSString  | Yes  | Customer service account |
+| loginPwd   | NSString | No  | Customer service account password, used only when token is empty |
+| token   | NSString  | No | The company token that has been obtained. When using the token method, do not set a password. Setting a password will trigger re-login and refresh the token. |
+| vc   | UIViewController | Yes | The vc that performs the jump |
+| resultBlock   | Block | No  | Execution result, code=1 means success   |
+
+
+Example:
+
+```
+
+[SobotTMApi loginUser:fieldUserName.text password:fieldPassword.text token:fieldToken.text result:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+    if(code == 1){
+    		// Create VC directly, decide on usage yourself
+		SobotTMHomeV6Controller *tmHomeVC = [[SobotTMHomeV6Controller alloc]init];
+    }
+}];
+
+```
+
+
+Method 3: Log in with AppKey and appid. The login will be completed automatically, and the page will redirect.
+Method:
+
+```
+
+//// Method Two to Launch Call Page
+/// @param account  Account
+/// @param app_key AppKey
+/// @param appid appid
+/// @param vc Launch VC
+/// @param resultBlock Callback result
++(void)startWithAcount:(NSString *)account appkey:(NSString *)app_key appid:(NSString *) appid viewController:(UIViewController *)vc  result:(SobotTMResultBlock) resultBlock;
+    
+    
+```
+Parameter
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| account   | NSString | Yes  | Customer service account |
+| app_key   | NSString  | Yes | appkey |
+| appid   | NSString  | Yes | appid |
+| vc   | UIViewController  | Yes | The vc that performs the jump |
+| resultBlock   | Block |  No | Execution result, code=1 means success |
+
+Example code:
+
+
+```
+
+ [SobotTMApi startWithAcount:@"your account" appkey:@"your appkey" appid:@"your appid" viewController:self result:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+            
+        }];
+
+```
+
+
+## Function Description
+
+
+### Open API
+#### Initialization
+
+> The first step in using the open API is to set the initialization configuration.
+
+> Example:
+
+```
+SobotCallCacheEntity *callCacheEntity = [[SobotCallCacheEntity alloc] init];
+    callCacheEntity.callApiHost = @"https://openapi.soboten.com";
+    callCacheEntity.openApiHost = @"https://api.sobot.com";
+    callCacheEntity.stompSocketUri = @"wss://openapi.soboten.com/v6.0.0/webmsg/cc-webmsg";
+    callCacheEntity.janusSocketUri = @"wss://rtc.sobot.com.cn/janus";
+    [SobotTMOpenApi initWithConfig:callCacheEntity result:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+        
+    }];
+```
+
+##### Request Parameters
+
+See the description of SobotCallCacheEntity for details.
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+#### Login Operation
+#####  Login
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added.
+
+> Example:
+
+```
+///  Login
+/// @param account Account
+/// @param loginPwd Password
+/// @param token token
+/// @param resultBlock Callback for login result
+/// Account is required. Either password or token must have a value.
++(void)loginWithAcount:(NSString *)account
+              password:(NSString * )loginPwd
+                 token:(NSString *)token
+                result:(SobotTMResultBlock) resultBlock;             
+```
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | --- |
+| account | Login account | string | No   | Call agent account |
+| loginPwd | Password | string | No   | Password for the call agent. If there is a token, no need to pass the password. If the password exists, it will re-fetch the token. |
+| token    | Login token | string | Yes   | If there is a token, it will be used for login first. The token can be empty. |
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Check In
+
+1. The return values of this interface will keep adding attributes. Please use the correct compatible coding method to ensure that the calling code will not throw errors when return value attributes are added!
+2. The system gets the latest agent ID in this interface. If you change the ID, the new ID will take effect after you sign in again.
+3. Calling the check-in interface from one end will cause other ends to disconnect (not offline agents);
+4. Support the login status of the agent server = offline, online, and all other status check-ins. But when the agent server's working status = calling, ringing, in a call, on hold, or in wrap-up, check-in is not allowed.
+
+> Example:
+
+```
++(void)agentLoginWithExt:(NSString *)ext
+             agentStatus:(int )agentStatus
+                 callWay:(int)callWay
+              bindMobile:(NSString*)bindMobile
+             sipPassword:(NSString *)sipPassword
+                   sipIp:(NSString *)sipIp
+              thisQueues:(NSArray *)thisQueues
+             ResultBlock:(SobotTMResultBlock)resultBlock;           
+```
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | --- |
+| ext | Extension number | string | No   | Extension number |
+| agentStatus | Login Status | string | No   | The agent's login status after signing in successfully.<br> 1: Online; 2: Do Not Disturb.<br> If empty, default is Do Not Disturb. |
+| callWay    | Login Method |int | No   |  2.sip   3.Mobile Login  (Web login method not supported) |
+| bindMobile    | Bind phone number |int | Yes  | Mobile number or landline number.<br>When the answering method is mobile, the bound phone number is not empty. The bound phone number specified by the interface will change the bound phone number in the agent settings.<br>The bound phone numbers for different agents cannot be the same. |
+|thisQueues    | Reception skill group number set  |NSArray | Yes   |  Reception skill group |
+
+
+##### Return Value of Success Callback Function
+| Attribute       |  Name    | Type   | Description |
+| -------------- | ------- | ------- | ---- |
+| agentState | Login Status | string | The agent's login status after signing in successfully.<br> 1: Online; 2: Do Not Disturb.<br> If left empty, the default is Do Not Disturb. |
+| phoneType | Answering Method | string | After the answering method specified by the interface is successfully logged in, it will change the agent's default answering method. When the administrator resets the agent's answering method permission, it will also change the agent's default answering method.<br> sip: SIP phone; pstn: mobile phone; webrtc: web page.<br> If it is empty, the system will use the agent's default answering method. |
+| bindExt    | Bind extension account | string | The extension account specified by the interface will change the extension account bound in the agent settings.<br>When it is empty, the system takes the extension account bound in the agent settings. |
+| bindMobile  | Bind phone number | string | Mobile phone number or landline number.<br>The phone number specified by the interface will change the phone number bound in the agent settings.<br>If empty, the system will use the phone number bound in the agent settings. |
+| reasonCode  | Busy Reason | number | The reason for being busy.<br>2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
+| agentLoginQueueInfos  | Reception Skill Group | List<QueueAgentCheckin> | Yes | Detailed information of the skill group set for currently signed-in agents |
+
+###### Skill Group Information QueueAgentCheckin
+| Attribute       |  Name    | Type   | Description |
+| -------------- | ------- | ------- | ---- |
+| queueID | Skill Group Code | string | Skill Group Number |
+| queueName | Queue Name | string | Skill Group Name |
+| queueWeight | Queue Weight | int | Queue Weight |
+|checkin | Check-in group type | int | 0: Default check-in group, 1: Optional check-in group. Default is the check-in group. |
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Check Out
+
+1. The return values of this interface will keep adding attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. The agent's working status must be "Ready", "Busy", or "Locked". Otherwise, it is not allowed.
+
+> Example:
+
+```
+  [SobotTMOpenApi logOut:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+        
+    }]; 
+```
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+
+#### Busy Status
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+
+> Example:
+
+```
+    [SobotTMOpenApi noReady:2 resultBlock:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+        
+    }];
+```
+##### Request Parameters
+
+
+| Attribute    | Name   | Type   | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| reasonCode  | Busy Reason | number |  No  | Login status displayed after setting busy.<br>2: Do Not Disturb; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Meal); 15: Break (Event); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3). |
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Idle Placement
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatible coding method to ensure that the calling code will not throw errors when return value attributes are added!
+
+> Example:
+
+```
+    [SobotTMOpenApi ready:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+        
+    }];
+
+```
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+#### Query Agent's Login Information
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatible coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Call this interface after logging in successfully.
+ 
+>Example:
+
+```
+    +(void)queryLoginBingInfo:(SobotTMResultBlock) resultBlock;
+```
+
+##### Return Value
+Attribute | Name | Type | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| serviceId  | Agent ID | String |  No  | Agent ID |
+| agentID  | Agent ID | String |  No  | Agent ID |
+| agentName  | Agent Name | String |  No  | Agent Name |
+| thisDN  | Extension Number | String | No | Bind extension account |
+| phone  | Phone Number | String |  No  | Bound phone number |
+|phoneTypes  | Answering Method |List<PhoneType> |  No  | Answering Method|
+|receptionQueues  | List of skill groups currently being served |List<QueueAgentCheckin> |  No  | Query the real-time skill group data that agents have checked into (the skill groups currently in effect for reception). |
+
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+#### Query the available answering methods for the seat
+1. The return values of this interface will continue to add attributes. Please use the correct compatible coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Call this interface after logging in successfully.
+ 
+>Example:
+
+```
+    +(void)queryPhoneType:(SobotTMResultBlock) resultBlock;
+```
+
+##### Return Value
+Attribute | Name | Type | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| agentUuid | Agent ID | String | No | Agent ID |
+| agentID  | Agent ID | String |  No  | Agent ID |
+| agentName  | Agent Name | String |  No  | Agent Name |
+|ext  | Extension Number | String | No | Bind extension account |
+| phone  | Phone Number | String | No | Bound phone number |
+|phoneTypes  | Answering Method |List<PhoneType> |  No  | Collection of answering methods|
+
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+
+#### Query Available Extension Numbers for Agent Seats
+1. The return values of this interface will keep adding attributes. Please use the correct compatibility method to code, ensuring that the calling-end code will not throw errors when return value attributes are added!
+2. Call this interface after logging in successfully.
+
+>Example:
+ 
+```
+    +(void)queryUnusedExts:(SobotTMResultBlock)resultBlock;
+```
+##### Return Value
+| Attribute | Name | Type | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| data  | Extension information array | List<Ext> | No | Extension set information |
+
+>Ext Description
+
+| Attribute    | Name   | Type   | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| ext  | Extension Number | String | No  | Extension number |
+| bindStatus  | Extension Binding Status | String | No | 0-Not Bound, 1-Bound |
+
+##### Callback Function
+See the description of SobotTMResultBlock for more details.
+
+####  Query the login status of the agent
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code will not throw errors when return value attributes are added!
+2. Call this interface after logging in successfully.
+ 
+>Example:
+ 
+```
+    +(void)queryStates:(SobotTMResultBlock)resultBlock;
+    
+```
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Query Available Busy Reasons for Agent Seats
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility method for encoding, ensuring that the code on the calling side does not throw errors when return value attributes are added!
+>Example:
+ 
+```
+    +(void)queryAgentBusyStatus:(SobotTMResultBlock)resultBlock;
+```
+##### Return Value
+| Attribute    | Name   | Type   | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| data  | Busy status array |List<AgentBusyStatus> |  No  | Collection of busy reasons |
+
+> AgentBusyStatus
+
+| Attribute    | Name   | Type   | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| name  | Status Name | String |  No  | Status Name |
+| code  | Status Code | String | No | Status Code |
+
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+
+#### Query the skill groups that the agent can sign in to
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+
+>Example:
+ 
+```
+   +(void)queryReceptionQueues:(SobotTMResultBlock)resultBlock;
+   
+```
+
+##### Return Value
+| Attribute    | Name   | Type   | Nullable | Description |
+| ------- | ------ | ------ | ---- | ------ |
+| data  | The skill group currently served by the agent | List<QueueAgentCheckin> |  No  | Skill information collection |
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+#### Reset Offline (Log Out)
+1. The return values of this interface will keep adding attributes. Please use the correct compatible coding method to ensure that the calling code does not throw errors when return value attributes are added!
+
+>Example:
+ 
+```
+    +(void)logOut:(SobotTMResultBlock)resultBlock;
+```
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+
+### Call Operation
+
+####  Outbound Call
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility method for coding to ensure that the calling code does not throw errors when return value attributes are added!
+
+> Example:
+
+```
+///  Outbound Call
+/// @param otherDN Customer number
+/// @param privacyNumber Customer number encryption
+/// @param companyId Company ID. If not provided, the default is the companyId returned at login.
+/// @param ANI  Specifies the caller ID number on the customer side
+/// @param outboundPlanCode  Specifies the external number scheme code on the customer side (Optional outbound route code. According to the outbound route code set in the ZhiChi system, match an external number to call the customer)
+/// @param resultBlock Result callback
++(void)makeCallWithotherDN:(NSString *)otherDN
+             privacyNumber:(NSString*)privacyNumber
+                 companyId:(NSString*)companyId
+                       ani:(NSString *)ANI
+                  userData:(NSDictionary *)userData
+          outboundPlanCode:(NSString *)outboundPlanCode
+               ResultBlock:(SobotTMResultBlock)resultBlock
+```
+
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | -------------------------- |
+| otherDN   | Customer Number | string | No | Customer number displayed in the UI. For example: 135XXXXX5678; 13512345678; |
+| privacyNumber | Customer Number Encryption | string | Yes | Supports encrypted number outbound calls; Example: XFHAOWHFEFLASJLKWJLD; |
+| ANI   | Specify the caller ID number on the customer side | string | Yes | A valid number within the enterprise data permission scope. It does not need to be within the agent's data permission settings.<br>When not empty, the system uses this number to call customers. All data set in the agent's outbound routing will become invalid.<br>When both the specified caller ID number and the specified caller ID scheme code on the customer side are empty, the system uses the rules and numbers set in the <Outbound Routing> for agents to make calls. |
+| outboundPlanCode | Specified customer-side outbound number plan code | string | Yes | A valid dynamic outbound number plan within the scope of enterprise data permissions. It does not need to be within the data permission range set for agents.<br>When the specified customer-side outbound number is not empty, the specified customer-side outbound number plan code must be empty.<br>When not empty, the system uses this plan to query numbers for outbound calls. All data set in the agent's outbound routing will be invalid.<br>When both the specified customer-side outbound number and the specified customer-side outbound number plan code are empty, the system will use the rules and numbers set in the <Outbound Routing> by the agent for outbound calls. |
+| userData | Custom data | object | Yes | This value will be returned during phone events.<br>This value will be stored in call records.<br>Requires encodeURIComponent encoding. |
+
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+#### Answer the Call
+
+1. The return values of this interface will keep adding attributes. Please use the correct compatibility coding method to ensure that the calling code won't throw errors when new attributes are added to the return values!
+
+> Example:
+
+```
+    [SobotTMOpenApi answer:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+            
+        }];
+```
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+#### Hang Up
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+
+> Example:
+
+```
+    [SobotTMOpenApi hangup:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+           
+        }];
+```
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+####  Keep
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Temporarily suspend the call between the agent and the customer. After holding, the customer will hear hold music, and the agent side will be muted.
+3. This operation supports 3 answering methods: SIP phone, web page, and mobile phone.
+
+> Example:
+
+```
+    [SobotTMOpenApi holdCall:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+            
+        }];
+```
+
+##### Callback Function
+See the description of SobotTMResultBlock for more details.
+
+#### Cancel Hold
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Restore the suspended call between the agent and the customer. After canceling the hold, the customer and the agent resume normal conversation.
+
+> Example:
+
+```    
+[SobotTMOpenApi retrieveCall:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+            
+        }];
+
+```
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+####  Mute
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Turn off the microphone of the operator's station so that others cannot hear the sound from the current station. For example: Agent A consults with Agent B, and both Agent A and Agent B can operate to mute their own microphones.
+3. The listener does not support this operation (the initiator's microphone is always off during monitoring).
+4. This operation supports 3 answering methods: SIP phone, web page, and mobile phone.
+
+> Example:
+
+```
+///   Mute
+/// @param resultBlock Result callback
+    [SobotTMOpenApi muteCall:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+
+        }];
+```
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+####  Unmute
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. Restore the microphone on the agent side so that others and the agent can resume normal calls.
+
+> Example:
+
+```
+///   Unmute
+/// @param resultBlock Result callback
+ [SobotTMOpenApi unmute:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+}];  
+        
+```
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+#### Query Sound Playback Type
+
+Switch between the earpiece and speaker.
+
+> Example: 
+
+---
+
+```
+///Query sound playback type
+NSString *type = [SobotTMOpenApi searchPlayCategory];
+
+```
+
+
+##### Return Value
+
+| Attribute    | Name   | Type   | Description |
+| ------- | ------ | ------ | ---- |
+| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback <br> Receiver Mode AVAudioSessionCategoryPlayAndRecord |
+
+
+#### Set Sound Playback Type
+
+Switch between the earpiece and speaker.
+
+> Example: 
+
+
+
+```
+///Set the type of sound playback
+ [SobotTMOpenApi changedPlayCategory:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+ 
+}];
+```
+
+
+##### Return Value
+
+| Attribute    | Name   | Type   | Description |
+| ------- | ------ | ------ | ---- |
+| AVAudioSessionCategory  | Playback Type | String | Speaker Mode AVAudioSessionCategoryPlayback <br> Receiver Mode AVAudioSessionCategoryPlayAndRecord |
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Send Satisfaction
+
+1. The return values of this interface will keep adding attributes. Please use the correct compatible coding method to ensure that the calling code will not throw errors when return value attributes are added!
+2. After the agent sends the satisfaction survey, the system disconnects all agent-side calls (including monitoring; three-way calls, etc.), keeps the customer-side call, and plays the satisfaction evaluation. At the same time, it hangs up all agent-side calls.
+
+> Example:
+
+```
+    
+/// Send Satisfaction Evaluation
+/// @param resultBlock Result callback
+[SobotTMOpenApi sendSatisfy:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+              }];
+
+```
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+#### Extend the Tidying Duration
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. When the agent's phone status is in wrap-up, you can extend the wrap-up duration; 30-900 seconds.
+
+> Example:
+
+```
+    [SobotTMOpenApi delayACW:30 ResultBlock:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+
+
+                }];
+```
+
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | ------------- |
+| delayTime | Extend Time | number | No | Positive integer, 30-900 seconds |
+
+##### Callback Function
+See the SobotTMResultBlock description for details.
+
+####  Finish Arranging
+1. The return values of this interface will keep adding attributes. Please use the correct compatibility coding method to ensure that the calling code will not throw errors when return value attributes are added!
+2. When the agent's phone status is in the "organizing" state, you can end the organizing state early.
+
+> Example:
+
+```
+///  End of sorting
+/// @param resultBlock Result callback
+[SobotTMOpenApi completeACW:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+            
+        }];
+```
+##### Callback Function
+For details, see the SobotTMResultBlock description.
+
+####  Finish organizing and set to busy
+1. The return values of this interface will keep adding attributes. Please code with proper compatibility to ensure that the calling code won't throw errors when new attributes are added to the return values!
+2. When the agent's phone status is in wrap-up, they can end the wrap-up status early and switch to Do Not Disturb mode.
+
+> Example:
+
+```   
+/// End sorting and set to busy
+/// @param resultBlock Result callback
+[SobotTMOpenApi completeACWToBusy:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+    
+}];
+```
+##### Return Value of Callback Function
+See the SobotTMResultBlock description for details.
+
+
+#### Send Button
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatibility coding method to ensure that the calling code does not throw errors when return value attributes are added!
+
+> Example:  
+
+
+```  
+/// Send Button
+/// @param dtmfDigits  Key values (Send one key value per request. For example, for 801#, send the key requests 8, 0, 1, and # in sequence. This parameter cannot be empty.)
+/// @param resultBlock Result callback
+[SobotTMOpenApi agentSendDtmf:@"#" ResultBlock:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+   
+}];
+```
+
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | ------------- |
+| dtmfDigits | Key Set | string | No | Maximum 24 digits. Characters include 1-9, *, and #. Example: 801#. |
+
+##### Callback Function Return Value
+See the SobotTMResultBlock description for details.
+
+#### Auxiliary Operations
+ 
+#####   Query the Outbound Routing Rules for Seats
+
+1. The return values of this interface will continue to add attributes. Please use the correct compatible coding method to ensure that the calling code does not throw errors when return value attributes are added!
+2. After the agent signs in, the agent can check the outbound routing rules set in the "Outbound Routing" for agents.
+
+>Example
+
+```
+/// Query the outbound routing rules for agents
+/// @param resultBlock Result callback.
+[SobotTMOpenApi queryRoutes:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+    if(code == CALL_CODE_SUCCEEDED){
+        
+    }
+}];   
+```
+##### Return Value of Callback Function
+For details, see the SobotTMResultBlock description.
+
+
+##### Return Value obj Description
+| Attribute       | Name     | Type   | Description |
+| -------------- | ------- | ------- | ---- |
+| agentUUID | Agent ID | string  | Agent ID |
+| agentID | Agent ID | string  | Agent ID |
+| agentName | Agent Name | string  | Agent Name |
+| explicitRule | Explicit rule array | object  | Set of explicit rules. See Table 1 below |
+| explicitSchema | Array of dynamic display schemes | object  | Collection of dynamic display schemes. See Table 2 below |
+| explicitNumbers | Array of explicit numbers | object  | Collection of explicit numbers. See Table 3 below |
+
+> Table 1 explicitRule Explanation of Explicit Rule Array
+
+| Attribute | Name | Type | Description |
+| ------- | ----- | ------- | ---- |
+| code  | Encoding  | string  | 1: Enterprise number pool random matching; 2: Dynamic outbound number plan matching; 3: Agent number pool specified. |
+| name   | Name | string  | Name. |
+| hasSet | Is it default | boolean  | Only one data in the collection is default data.<br> true: Default display rule; false: Non-default display rule. |
+
+> Table 2 explicitSchema Dynamic External Schema Array Description
+
+| Attribute  |  Name   | Type    | Description |
+| ------- | ----- | ------- | ---- |
+| code  | Encoding  | string  | Plan ID|
+| planName   | Name | string  | Name. |
+| hasSet | Is Default | boolean  | Only one item in the collection is the default data.<br> true: default plan; false: non-default plan. |
+
+> Table 3 explicitNumbers Description of the explicit number array
+
+| Attribute | Name | Type | Description |
+| ------- | ----- | ------- | ---- |
+| number  | Display number  | string  | Relay number. |
+| nickName   | Number Alias | string  | Alias for the trunk number. |
+| hasSet | Is Default | boolean  | Only one data in the collection is default data.<br> true: default display number; false: non-default display number. |
+
+#####  Modify the Outbound Routing Rules for Seats
+1. The return values of this interface will keep adding attributes. Please use the correct compatible coding method to ensure that the calling code won't throw errors when new attributes are added to the return values!
+2. When the agent's phone is idle, the system can switch to the last used outbound rule for that agent.
+
+> Example:
+
+```
+/// Modify the outbound routing rules for the agent
+/// @param explicitRule Explicit rule (1: Random match in enterprise number pool; 2: Dynamic explicit number scheme match; 3: Designated agent number pool; Single choice;)
+/// @param explicitCode Dynamic explicit code  Required when the explicit rule is a dynamic explicit number plan
+/// @param explicitNumber Display number. Do not use display rules. Directly specify one of the enterprise's display numbers to call the customer. At least one of the display number or display rule must be provided.
+/// @param resultBlock Result callback
+ [SobotTMOpenApi agentSetRouteExplicitRule:@"1" explicitCode:@"" explicitNumber:@"" resultBlock:^(NSInteger code, id  _Nullable obj, NSString * _Nullable msg) {
+        
+    }];      
+```
+
+##### Request Parameters
+
+
+| Attribute | Name | Type | Nullable | Description |
+| --------- | ------ | ------ | ---- | ---------- |
+| explicitRule | Explicit Rule | string | No | Must be within the data permission range of the agent's explicit rule in <Outbound Route>.<br> 1: Random match from the enterprise number pool; 2: Match with dynamic explicit number plan; 3: Specify from the agent number pool. |
+| explicitCode | Dynamic External Display Scheme Code | string | Yes | Must be within the data permission range of the agent's dynamic external display scheme in <Outbound Route>. <br> When the external display rule matches the dynamic external display number scheme, it cannot be empty. |
+| explicitNumber | Display Number | string | Yes | Must be within the personal number pool data permission range of the agent in <Outbound Route>. <br> When the display rule = Agent Number Pool Specified, it cannot be empty. |
+
+
+##### Return Value of Callback Function
+See the description of SobotCallResultBlock for details.
+
+##### Return Value
+| Attribute       | Name     | Type   | Description |
+| -------------- | ------- | ------- | ---- |
+| agentUUID | Agent ID | string  | Agent ID |
+| agentID | Agent ID | string  | Agent ID |
+| agentName | Agent Name | string  | Agent Name |
+| explicitRule | Explicit Rule Array | object  | Set of explicit rules. See Table 1 below |
+| explicitSchema | Dynamic explicit scheme array | object  | Collection of dynamic explicit schemes. See Table 2 below |
+| explicitNumbers | Array of explicit numbers | object  | Collection of explicit numbers. See Table 3 below |
+
+> Table 1 explicitRule Array of Explicit Rules Description
+
+| Attribute | Name | Type | Description |
+| ------- | ----- | ------- | ---- |
+| code  | Code  | string  | 1: Enterprise number pool random matching; 2: Dynamic outbound number scheme matching; 3: Agent number pool assignment. |
+| name   | Name | string  | Name. |
+| hasSet | Is Default | boolean  | Only one data item in the collection is the default data.<br> true: Default display rule; false: Non-default display rule. |
+
+> Table 2 explicitSchema Dynamic External Schema Array Description
+
+| Attribute | Name | Type | Description |
+| ------- | ----- | ------- | ---- |
+| code  | Code  | string  | Plan ID |
+| planName   | Name | string  | Name. |
+| hasSet | Is Default | boolean  | Only 1 item in the collection is the default data.<br> true: default plan; false: non-default plan. |
+
+> Table 3 explicitNumbers Description of the explicit number array
+
+| Attribute | Name | Type | Description |
+| ------- | ----- | ------- | ---- |
+| number  | Display number  | string  | Trunk number. |
+| nickName   | Number Alias | string  | Alias for the trunk number. |
+| hasSet | Whether it is default | boolean  | Only one data in the set is default data.<br> true: default display number; false: non-default display number. |
+
+
+
+
+# General Attribute Description
+
+
+##### Unified Callback Interface SobotCallResultBlock
+
+All interfaces uniformly use this rule to return results. It has returned to the main thread, and you can directly refresh the UI.
+
+| Parameter   | Type   | Required   | Description   |
+|:----|:----|:----|:----|
+| code   | int  | YES | 0, failure, 1 success (This version only has 2 return values).   |
+| obj   | object  | No | The network interface JSON will be converted to a dictionary, and the value is empty for non-interface operations. |
+| msg   | String  | No | Network interface is a json string, non-interface operation is an operation result description, and failure reason when it fails.   |
+
+
+When the status is successful, please use the following listener to get the real-time status of the agent and call events:
+
+Event description reference [Call Event (TS)](https://codecenter.sobot.com/pages/46ad07/).
+
+
+
+> Listen for call events
+
+```  
+//1. Use the proxy method to implement monitoring
+//>1.1 Set Proxy
+    [SobotTMClient getSobotTMClient].delegate = self;
+    
+//>1.2 Implement the proxy method
+   -(void)onCallStateChanged:(SobotCallLibClientListener) state mesage:(NSString *_Nullable) message objcect:(id _Nullable )obj extends:(id _Nullable) extends;    
+```
+
+
+##### ● SobotTMParameter Class Description
+The configuration takes effect immediately. Use the following function in SobotTMApi.h to configure. Initialization and direct configuration will override the previous setting value;
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| showHomeBack   | BOOL  | No | Whether to show the back button on the home page. Default is NO, not displayed. |
+
+Setup method:  
+
+
+```    
+/// Change the kitConfig configuration
+/// @param kitConfig  Configuration settings
++(void)configKitInfo:(SobotTMParameter *) kitConfig;
+
+
+/// Initialize Configuration
+/// @param config  SobotCallCacheEntity configuration class, domain name/internationalization/resources
+/// @param kitInfo SobotKitConfig configuration class
+/// @param resultBlock Initialization callback (NSInteger code, id _Nullable obj, NSString *_Nullable msg);
++(void)initWithConfig:(SobotCallCacheEntity *) config  kitInfo:(SobotTMParameter *)kitInfo result:(SobotTMResultBlock) resultBlock;
+```  
+
+#####  SobotCallCacheEntity Class Description
+This property must be configured during initialization. Configure it once and there is no need to repeat the configuration.
+
+| Parameter | Type | Required | Description |
+|:----|:----|:----|:----|
+| bundleName   | NSString | No   | Resource name, default is SobotCall, default is SobotCall.  |
+| languagePathInBundle   | NSString | No   | Path of the internationalization file in the bundle, fixed value Localizable.   |
+| languageTableName   | NSString   | No | The name of the internationalization file in the bundle, fixed value SobotLocal.  |
+| colorTableName   | NSString  | No  | Color file name in the bundle, fixed value: SobotColor.   |
+| absoluetelanguage   | NSString  | No  | Specify the language. The default follows the system. |
+| defaultlanguage   | NSString  | No  | Default language when recognition fails, following the system by default. |
+| openApiHost   | NSString  | No  | Public interface domain name.    |
+| callApiHost   | NSString  | No  | Call service domain name.    |
+| stompSocketUri   | NSString  | No  | Agent status monitoring service address.    |
+| janusSocketUri   | NSString  | No  | Janus link service address.    |
+| sipProxy   | NSString  | No  | Janus proxy server address.    |
+
+
+
+
+
+
+
+## Source Code and Demo
+
+Wisdom Tooth SDK Function Experience Demo [Download Address](https://github.com/ZCSDK/sobot_tm_iOSDemoe.git)
+
+## Update Notes
+
+[《SDK Version Update Notes》](https://shimo.im/docs/loqeMjgX8WibpRqn/)
+
+##  Privacy and Permissions
+
+[《ZhiChi Technology SDK Personal Information Collection and Usage Statement》](https://www.zhichi.com/docs/clause/sdk-clause.html)
