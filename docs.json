@@ -16,10 +16,10 @@
           {
             "group": "Web",
             "pages": [
-              "build-apps/web/markdown",
-              "build-apps/web/code",
-              "build-apps/web/images",
-              "build-apps/web/settings",
+              "build-apps/web/webjssdk",
+              "build-apps/web/weblink",
+              "build-apps/web/calljssdk",
+              "build-apps/web/callphoneui",
               "build-apps/web/navigation"
             ]
           },

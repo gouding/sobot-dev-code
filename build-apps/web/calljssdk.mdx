@@ -1,0 +1,1692 @@
+---
+title: 'Call Web-JS SDk'
+description: 'Add image, video, and other HTML elements'
+icon: 'image'
+---
+
+### Precautions:
+
+- It is recommended to use Chrome browser first. It is not supported for use in mobile H5 pages. This version has only been fully tested for PC browsers. There may be unknown compatibility issues when used in mobile H5 pages.   
+- Since softphones need to rely on the WebRTC capabilities provided by the browser, when using softphones, it is recommended to use browsers with better support for WebRTC, such as Chrome or Firefox browsers.   
+- Integrating the SDK requires the use of the HTTPS protocol.   
+- Chrome browser needs to enable microphone and sound permissions. Firefox browser needs to enable microphone and speaker permissions.   
+- When using in an iFrame, the iframe needs to add an allow attribute. iframe.allow = "midi;encrypted-media;microphone *;camera *;"Only in this way can the relevant capabilities of WebRTC be used in the iframe.   
+
+### javascript-sdk plug-in reference URL
+> Note: When using the SDK, please add the sysnum parameter in the following way. The sysnum corresponds to the enterprise ID of Sobot (which can be viewed in Sobot management background => Management Center => Account Management => Enterprise Account => Enterprise Information). Do not download the SDK code to the local area and use it on your own server to avoid being unable to obtain SDK updates in the future, resulting in the unavailability of the SDK.
+
+```js
+<script type="text/javascript" src="https://sg.sobot.io/call-sdk/6.4.0/sobot-call-sdk.js?sysnum=Your enterprise ID"></script>
+```
+
+### Initialization
+
+#### ● Initialize Plug-in
+
+> The first step for using the JavaScript SDK is to create an example
+
+```js
+    const agent = new SobotClient.agent()
+```
+
+> The second step is to initialize
+
+```js
+    agent.initAgent({
+        token: 'xxxxxxxxxxxx',
+        companyId: 'xxxxxxxxxxxxxx',
+        agent: " 1005 ",
+        agentType: " 0 ",
+        allowStorageListen: true,
+        success: function (msg){
+            console.log('new Client success : ', msg)
+        },
+        error: function (msg){
+            console.log('new Client error : ', msg)
+        }
+    })
+    // When the initialization succeeds, msg will be returned to success callback function, and the status in msg is success. See Table 1 below for the params
+
+    // If the agent is not offline in the Sobot system before logging in, and subscribes to the EventAgentRegainStatus agent re-connection success event or subscribes to all agent events through EventAgentAll in the second event subscription step, after successful initialization, the agent will receive the EventAgentRegainStatus message from where it subscribed to the event. This message indicates that the agent has successfully reconnected, and it will carry the current agent's login status and call status for restoring the page. See Table 2 below for the params
+```
+
+> Table 1 Initialization request param description
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| token| Login authentication| string| No| Agent login authentication (please refer to the Sobot API authentication file for the docking token method) <font color="Red">Agent authorization API (agent token) should be docked</font>|
+| companyId| Company code| string| No| Company code|
+| agent| Agent| string| No| Agent work no. or id.|
+| agentType| API agent param type| string| Yes| 0: Agent work no., 1: Agent id; Agent work no. by default when it is null.|
+| allowStorageListen| Allow multi-tag outbound calls| boolean| Yes| false: Disable; true: Enable multi-tag outbound calls; Disable by default when it is null|
+| success| Success callback function| function| Yes| Callback function after success.|
+| error| Failure callback function| function| Yes| Callback function after failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+
+> Table 2 EventAgentRegainStatus event param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| messageID| Message ID| string| EventAgentRegainStatus|
+| agentStateInfo| Agent login status info| object| See Table 3 for the params|
+| workStatusInfo| Current agent traffic status info| object| The absence of this parameter means that the agent is not on the talk. See Table 4 for the params|
+
+> Table 3 agentStateInfo event param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| agent| Agent| string| Agent work no. or id.|
+| agentType| Agent param type| string| 0: Agent work no., 1: Agent id;|
+| companyId| Company code| string| Company code|
+| phoneType| Answering method| string| sip: SIP phone; pstn: Phone; webrtc: Web page.|
+| thisDN| Binding extension account| string| Extension account designated by agent login API.|
+| agentState| Current agent login status| string| 1: Online; 2: DND.|
+| agentStateTimestamp| Agent login time| timestamp| Agent login timestamp|
+| reasonCode | String | Occupied reason for agent | Occupied reason. 2: DND; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Dining); 15: Break (Active); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3) |
+| reasonCodeTimestamp| Agent occupied time| timestamp| Agent occupied timestamp|
+| workStatus| Current agent traffic status| string| Current agent traffic status|
+| workStatusTimestamp| Current agent traffic status timestamp| timestamp| Current agent traffic status timestamp|
+
+> Table 4 workStatusInfo event param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| callID| Talk ID| string| Talk ID.|
+| callType| Call type| string| "Outbound"；"Inbound"|
+| companyId| Company code| string| Company code|
+| otherDN| Customer Phone No.| string| Customer Phone No.|
+| otherDNRole| Customer role| string| See DNRole description below for the params.|
+| thisDN| Extension account bound to the agent| string| Extension account designated by agent login API.|
+| thisDNRole| Agent role| string| See DNRole description below for the params.|
+| thirdDN| 3rd-party no.| string| 3rd-party no.|
+| thirdDNRole| 3rd-party role| string| See DNRole description below for the params.|
+
+> DNRole description
+
+```js
+    Unknown(0, ""),
+    Origination(1, "Caller")
+    Destination(2, "Called")
+    AddedBy(3, "Attendee")
+    NewParty(4, "Party added in the meeting")
+    DeletedBy(5, "Party deleting others from the meeting")
+    DeletedParty(6, "Party quitting from the meeting")
+    ObserveBy(7, "Monitor")
+    TransferBy(8, "Transfer initiator")
+    ConsultBy(9, "Inquirer")
+    BargeinBy(10, "Interrupt initiator")
+    BargeinTo(11, "Interrupted")
+    InterceptTo(12, "Taken-away")
+    TransferTo(13, "Transferred")
+    ObserveTo(14, "Monitored")
+    InterceptBy(15, "Takeaway initiator")
+    ConferenceBy(16, "")
+```
+
+> The third step is to subscribe to the required talk events and events related to the agent status changes (choose either one of example 1 or 2. If they are both used, you will receive the event push from the two)
+
+> Example 1: Monitor all agent related events
+
+```js
+    agent.on('EventAgentAll', function (msg) {
+        // Perform logical processing according to messageID in msg
+        switch(msg.messageID) {
+            case 'EventAgentConnectionChanged' :
+                // Agent enforced offline event
+                // do something ...
+                break
+            case 'EventAgentReady' :
+                // Agent ready event
+                // do something ...
+                break
+            case 'EventAgentNotReady' :
+                // Agent occupied event
+                // do something ...
+                break
+            case 'EventTokenInvalid' :
+                // Agent token is invalid.
+                // Call the method for obtaining the token in your code to obtain the token again. After successful acquisition, call handleRefreshToken to update the token of the SDK.
+                // window.sobotAgent.handleRefreshToken(newToken)
+                // Note:
+                // 1. After the token expires, if the method for refreshing the token is not called, calls can still be made, but HTTP interfaces cannot be called.
+                // 2. After the EventTokenInvalid event is triggered, it will wait for 10 seconds to obtain a new token. During this period, the issued HTTP requests will be cached. After writing the new token, the cached requests will be reissued. If it exceeds 10 seconds without setting, the cache will be cleared and the EventTokenInvalid event will be triggered again.
+                // 3. If you do not need to use handleRefreshToken to automatically update the token, it is recommended to add a pop-up prompt in EventTokenInvalid to prompt the agent that the current token has expired. You can refresh the page or perform other operations that can obtain the token again.
+                break
+            default: 
+                //  do something ...
+        }
+    })
+```
+
+> Example 2: Monitor the required agent related events ([refer to Call Capability Message Format File for the complete events](/pages/46ad07/))
+
+```js
+    // Perform chaining call
+    agent
+        .on('EventAgentRegainStatus', function (msg) {
+            // Agent re-connection success event
+            // do something ...
+        })
+        .on('EventAgentConnectionChanged', function (msg) {
+            // Agent enforced offline event
+            // do something ...
+        })
+        .on('EventAgentReady', function (msg) {
+            // Agent ready event
+            // do something ...
+        })
+        .on('EventAgentNotReady', function (msg) {
+            // Agent occupied event
+            // do something ...
+        })
+        .on('EventDialing', function (dialingMsg) {
+            // dialingMsg -- Dialing event
+            // do something ...
+        })
+        .on('EventRinging', function (ringingMsg) {
+            // ringingMsg -- Ringing event
+            // do something ...
+        })
+        ...
+```
+
+> Method to unsubscribe events
+
+```js
+    // Unsubscribe the events after subscription
+    agent
+        .off('EventAgentConnectionChanged')
+        .off('EventAgentReady')
+        ...
+    // agent.off method provides two parameters, such as: agent.off(eventName, functionName)
+    // eventName refers to the name of the event you subscribed, and functionName is the name of execution function you defined. The same event can be subscribed multiple times and cancelled independently. If the off method is passed only eventName, then all subscribed functions will be cancelled. The methods are as follows:
+    function test1 (msg) {
+        // Agent ready event for the first subscription
+        // do something ...
+    }
+    function test2 (msg) {
+        // Agent ready event for second subscription
+        // do something ...
+    }
+    agent
+        .on('EventAgentReady', test1)
+        .on('EventAgentReady', test2)
+    
+    // Methods to unsubscribe are as follows:
+    // Unsubscribe test1 individually
+    agent.off('EventAgentReady', test1)
+    // Unsubscribe test2 individually
+    agent.off('EventAgentReady', test2)
+    // Or unsubscribe all agent ready events
+    agent.off('EventAgentReady')
+```
+
+### Login Operation
+
+#### ● Login
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The system obtains the latest agent work no. in this API. In case of any work no. change, please log in again, so that the changed work no. will take effect.
+3. Calling the login API from one end will cause the disconnection of the other end (not agent offline);
+4. Login is available when agent server status = offline, online and all other status. However, it is unavailable when the work status on the agent server = calling, dialing, talking, holding and sorting.
+
+> Example:
+
+```js
+    agent.login(
+        {
+            agentState: '2' ,
+            phoneType: "webrtc",
+            bindExt: " 1000 ",
+            bindMobile: ' 13333333333 ',
+            unbindExtOnLogout: false,
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| agentState| Login status| string| Yes| After Agent login status. 1: Online; 2: DND. When it is blank, DND is set by default|
+| phoneType| Answering method| string| No| When the API designated answering method is logged in successfully, it will modify the default answering method of the agent. Reset Agent Answering method Permission Agent: Answering method. sip: SIP phone; pstn: Phone; webrtc: Web page. When it is blank, the default agent answering method will be set.|
+| bindExt| Binding extension account| string| No| API Extension account Agent Bound extension account. The extension accounts bound to different agents cannot be the same. The data permission involves the extensions bound to the operation agent and other extensions not bound to agents.|
+| bindMobile| Bind Phone No.| string| Yes| Phone no. or telephone no. Answering method, Bind Phone No API Bind Phone No Agent Phone no. When it is blank, the bound phone number in agent settings will be set.|
+| unbindExtOnLogout| Unbind extension when offline| boolean| Yes| false: Not unbind; true: Automatically unbind after offline.|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| agentState| Login status| string| Agent login status. 1: Online; 2: DND. When it is blank, DND is set by default|
+| phoneType| Answering method| string| When the API designated answering method is logged in successfully, it will modify the default answering method of the agent. Agent Answering method Permission Agent: Answering method. sip: SIP phone; pstn: Phone; webrtc: Web page. When it is blank, the default agent answering method will be set.|
+| bindExt| Binding extension account| string| API Extension account Agent Bound extension account. When it is blank, the bound extension account in agent settings will be set.|
+| bindMobile| Bind Phone No.| string| Phone no. or telephone no. API Phone no Agent Phone no. When it is blank, the bound phone number in agent settings will be set.|
+| reasonCode| Occupied reason| number| Occupied reason. 2: DND; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Dining); 15: Break (Active); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3).|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Logout
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. It is only available when agent work status is ready, occupied or locking. Otherwise, it is unavailable.
+
+> Example:
+
+```js
+    agent.logout(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Occupied
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.notReady(
+        {
+            reasonCode: 11 ,
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| reasonCode| Occupied reason| number| No| Login status displayed after being occupied. 2: DND; 11: Break; 12: Break (Training); 13: Break (Meeting); 14: Break (Dining); 15: Break (Active); 16: Break (Custom 1); 17: Break (Custom 2); 18: Break (Custom 3).|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Available
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.ready(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Agent Reset Offline
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The agent can enforce to hang up the phone and log out to offline status in any login status and any call status;
+3. It can be used to reset the agent to offline during the agent status exception.
+
+> Example:
+
+```js
+    agent.resetLogout(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Query Agent Login Status
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Query only the break status and custom break status set available to the agent.
+
+> Example:
+
+```js
+    agent.queryStates(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| states| Agent login status list| object| Agent login status list. See Table 1 below|
+
+> Table 1 states login status list
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| code| Code| string| 11: Break, 12-18: Custom break.|
+| name| Name| string| Status name.|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| message| Failure reason| string| Failure reason|
+
+#### ● Query Agent Answering Method
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Query the answering method set for which the agent has permission, and return the default answering method (in the admin console, setting the UI to modify the agent answering method permission will reset the default answering method).
+
+> Example:
+
+```js
+    agent.queryPhoneType(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| id| Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| currentPhoneType| Answering method| string| sip: SIP phone; pstn: Phone; webrtc: Web page.|
+| ext| Bound extension account| string| Bound extension account|
+| phone| Bind Phone No.| string| Bind Phone No.|
+| phoneTypes| Answering method list| object| Answering method set. See Table 1 below|
+
+> Table 1 phoneTypes answering method list
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| phoneType| Answering method| string| sip: SIP phone; pstn: Phone; webrtc: Web page.|
+| default| Default answering method in the set| boolean| Only 1 piece of data in the set is the default data. true: Default answering method; false: Non-default answering method.|
+| defaultPhoneType| Default answering method in the set| boolean| Only 1 piece of data in the set is the default data. true: Default answering method; false: Non-default answering method.|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Query Enterprise Extension List
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.queryUnusedExts(
+        {
+            currPage: 1,
+            pageSize: 50,
+            ext: '0001',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| ext | Extension account (Used for fuzzy queries) | string |  Yes  | Default value: empty  |
+| currPage | Page number | number |  Yes  | Default value: 1 |
+| pageSize | Number of pagination items | number |  Yes  | Default value: 50|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| currPage | Page number  | number  | Default value: 1 |
+| pageSize | Number of pagination items  | number  | Default value: 50 |
+| total | Total number of items  | number  | -- |
+| exts| Extension account info| object| Extension account array (see Table 1 below)|
+
+> Table 1 exts description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| ext| Extension account| string| Extension account|
+| default| Default value in the set| boolean| Only 1 piece of data in the set is the default data. |
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+
+#### ● Query skill groups the agent can log in
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Query the call skill group of the agent that can be used for logging in. When “Call Function Setting\Agents select skill groups manually to log in” settings are enabled, data is returned according to the skill group configured by the agent. If the settings are not enabled, returned skill group data is blank (at this time, there is no need to pass skill group for logging in. The system will pass all skill groups added by the agent).
+
+> Example:
+```js
+    agent.queryAgentJoinedQueues(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+##### Request param
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+| Attribute| Name| Type| Description|
+| -------------- | ------- | ------- | ---- |
+| status| Request status| string| success: Success|
+| queues | List of skill groups joined | object  | Skill groups the agent can log in.(See Table 1 below) |
+
+
+> Table 1  queues list of skill groups joined
+
+| Attribute| Name| Type| Description|
+| ----- | ------- | ------- | ---- |
+| queueID| Skill group no.| string| Skill group ID|
+| queueName| Skill Group Name| string| Skill group name|
+| queueWeight | Skill group weight | number  | Skill group weight |
+| checkin | Log-in group type | number  | 0: Default log-in group, 1: Optional log-in group  It is log-in skill group by default; if it is blank, it indicates that the “Call Function Setting\Agents select skill groups manually to log in” settings are not enabled. |
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+
+#### ● Query agent login info
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+```js
+    agent.queryAgentLoginInfo(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+##### Request param
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+| -------------- | ------- | ------- | ---- |
+| status| Request status| string| success: Success|
+| agentUUID| Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| ext| Extension account| string| Extension account|
+| phone | Bind Phone No. | string  | Bind Phone No. |
+| phoneTypes| Answering method list| object| Answering method set. See Table 1 below|
+
+| receptionQueues | List of receiving skill groups | object  | Query skill group data logged in real time (receiving skill groups generated at that time). (See Table 2 below) |
+
+> Table 1 phoneTypes answering method list
+
+| Attribute| Name| Type| Description|
+| ----- | ------- | ------- | ---- |
+| phoneType| Answering method| string| sip: SIP phone; pstn: Phone; webrtc: Web page.|
+| default | Default answering method in the set | boolean  | Only 1 piece of data in the set is the default data.  true: Default answering method; false: Non-default answering method. |
+| defaultPhoneType | Default answering method in the set | boolean  | Only 1 piece of data in the set is the default data.  true: Default answering method; false: Non-default answering method. |
+
+> Table 2 receptionQueues list of receiving skill groups
+
+| Attribute| Name| Type| Description|
+| ----- | ------- | ------- | ---- |
+| queueID| Skill group no.| string| Skill group ID|
+| queueName| Skill Group Name| string| Skill group name|
+| queueWeight | Skill group weight | number  | Skill group weight |
+| checkin | Log-in group type | number  | 0: Default log-in group, 1: Optional log-in group  It is log-in skill group by default; if it is blank, it indicates that the “Call Function Setting\Agents select skill groups manually to log in” settings are not enabled. |
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+
+#### ● Query agent login data
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+```js
+    agent.queryAgentCanJoinedInfo(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+##### Request param
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+##### Return value of success callback function
+| Attribute| Name| Type| Description|
+| -------------- | ------- | ------- | ---- |
+| status| Request status| string| success: Success|
+| info | Agent info | object  | See Table 1 below |
+
+> Table 1 info
+
+| Attribute| Name| Type| Description|
+| -------------- | ------- | ------- | ---- |
+| id | Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| loginStatusCode | Login status code | string| Options recently logged in, which can be blank. |
+| loginStatusName | Login status name | string| Options recently logged in, which can be blank. |
+| currentPhoneType | Answering method | string| Options recently logged in, which can be blank. |
+| ext| Extension account| string| Extension account|
+| phone | Bind Phone No. | string  | Bind Phone No. |
+| phoneTypes | Answering method list | object  | Answering method list. (See Table 2 below) |
+| checkableQueues | List of skill groups joined | object  | Query skill group data logged in real time (receiving skill groups generated at that time). (See Table 3 below) |
+| loginStatus | Login status list | object   | Login status list. (See Table 4 below) |
+
+> Table 2 phoneTypes answering method list
+
+| Attribute| Name| Type| Description|
+| ----- | ------- | ------- | ---- |
+| phoneType| Answering method| string| sip: SIP phone; pstn: Phone; webrtc: Web page.|
+
+> Table 3 checkableQueues list of skill groups joined
+
+| Attribute| Name| Type| Description|
+| ----- | ------- | ------- | ---- |
+| queueID| Skill group no.| string| Skill group ID|
+| queueName| Skill Group Name| string| Skill group name|
+| queueWeight | Skill group weight | number  | Skill group weight |
+| checkin | Log-in group type | number  | 0: Default log-in group, 1: Optional log-in group  It is log-in skill group by default; if it is blank, it indicates that the “Call Function Setting\Agents select skill groups manually to log in” settings are not enabled. |
+
+> Table 4 Login status list
+
+| Attribute| Name| Type| Description|
+|------ | ------ | ---- | ---------- |
+| code   | Code | string |  Code |
+| name | Name | string | Name |
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+
+### Call Operation
+
+#### ● Outbound
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.makeCall(
+        {
+            otherDN: " 133****3333 ",
+            privacyNumber: "XFHAOWHFEFLASJLKWJLD",
+            ANI: " 01066666666 ",
+            agentANI: " 01088888888 ",
+            outboundRouteType: " 1 ",
+            outboundPlanCode: "xxxxxxxxxxxxx",
+            userData: {},
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| otherDN| Customer Phone No.| string| No| Customer number displayed by UI. E.g.: 135XXXXX5678; 13512345678;|
+| privacyNumber| Customer no. encryption| string| Yes| Support making outbound calls with encrypted number; e.g.: XFHAOWHFEFLASJLKWJLD.|
+| ANI| Designated customer display no.| string| Yes| Valid numbers within the scope of enterprise data permission, which can  be beyond the scope of data permission in agent settings.  When it is not blank, the system will use the number to call customers. Data set in agent outbound routing are invalid.  When both the designated customer display no. and the designated customer display no. scheme code are blank, the system will use the rules and numbers set by the agent in \<Outbound Routing> for outbound calls.|
+| outboundPlanCode| Designated customer display no. scheme code| string| Yes| Valid dynamic display no. scheme within the scope of enterprise data permission, which can be beyond the scope of data permission in agent settings.  Designated customer display no non empty, Designated customer display no. scheme code must be empty. When it is not blank, the system will use the scheme to query numbers and make outbound calls. Data set in agent outbound routing are invalid.  When both the designated customer display no. and the designated customer display no. scheme code are blank, the system will use the rules and numbers set by the agent in \<Outbound Routing> for outbound calls.|
+| agentANI| Designated agent display no.| string| Yes| The display number on the agent side of the call in the agent phone answering scenario. Valid numbers within the scope of enterprise data permission.  When it is not blank, the system will use the number to call agents.  When it is blank, the system will use the display no. of this outbound call to call the agent's cell phone.|
+| userData| Custom Data| object| Yes| Return the value in the attachedData of the call event.  Store the value in the call record. |
+
+#### ● Reject
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.rejectCall(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Answer
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.answer(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Hang up
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.hangup(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Hold
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After temporarily hanging up the talk between the agent and the customer and holding, the customer will hear holding sound and the agent's side is muted.
+3. This operation supports 3 kinds of answering methods, including SIP phone; web page; cell phone.
+
+> Example:
+
+```js
+    agent.holdCall(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Cancel Call Holding
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After resuming the hung-up talk between the agent and the customer and canceling the hold, the talk resumes as normal.
+
+> Example:
+
+```js
+    agent.retrieveCall(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Mute
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Turn off the operation agent's MIC so that no one else can hear the current agent. E.g.: When agent A inquires agent B, both agents can mute their MIC.
+3. This operation is unavailable to the monitor initiator (the initiator's MIC keeps off during the monitoring).
+4. This operation supports 3 kinds of answering methods, including SIP phone; web page; cell phone.
+
+> Example:
+
+```js
+    agent.muteCall(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Unmute
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Unmute the MIC on the agent side, allowing others to resume normal talks with the agent.
+
+> Example:
+
+```js
+    agent.unmute(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Transfer
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Make direct call transfer of the customer to another skill group/another agent/phone number/extension number, and hang up the current agent's call after successful operation. If the relay number has only 1 concurrent channel and the only channel is occupied by an inbound call, the number cannot be transferred to a third-party phone number (the transferred call will fail).
+
+> Example:
+
+```js
+    agent.singleTransfer(
+        {
+            targetType: " 0 ",
+            target: " 1002 ",
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| targetType| Type| string| No| 0: Agent; 1: 3rd-party no.; 2: Extension account; 3: Skill group.|
+| target| Target| string| No| Skill Group  Agent work no. or id \< API agent param type > Phone no.  Extension account. |
+
+#### ● Inquiry
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Before inviting a third party (agent/3rd-party number) to join the current talk, inquire the third party and ask if it wants to join the talk.
+3. If the relay number has only 1 concurrent channel and the only channel is occupied by an inbound call, the number cannot be used to inquire a third-party phone number (the inquired call will fail).
+
+> Example:
+
+```js
+    agent.initiateConsult(
+        {
+            targetType: " 0 ",
+            target: " 1002 ",
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| targetType| Type| string| No| 0: Agent; 1: 3rd-party no.; 2: Extension account;|
+| target| Target| string| No| Agent work no. or id ，\< API agent param type >。 Phone no.  Extension account. |
+
+#### ● Inquiry Cancellation
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The initiator can cancel the inquiry before the inquired party (the 3rd party) is connected.
+
+> Example:
+
+```js
+    agent.cancelConsult(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Retrieve After Inquiry
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. End the talk of the third party (agent/3rd-party number) and resume the talk between the previous agent and the customer. This API is also used for scenarios including "retrieval after inquiring the third party".
+
+> Example:
+
+```js
+    agent.retrieveConsult(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Transfer After Inquiry
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After inquiring a third party (agent/3rd-party number), the talk is transferred to the third party, and the talk with the previous agent ends. This API is also used for scenarios including "transfer after inquiring the third party".
+
+> Example:
+
+```js
+    agent.consultTransfer(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● 3rd-Party Call After Inquiry
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After inquiring the third party (agent/3rd-party number), the third party agrees to join the three-person talk, and then the previous agent adds the third party into the current talk, forming a three-party talk.
+
+> Example:
+
+```js
+    agent.consultConference(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Send Satisfaction
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After the agent sends satisfaction, the system disconnects all agent-side channels (including monitoring, 3rd-party, etc.), keeps the customer-side channels, plays satisfaction evaluation, and hangs up all agent-side channels.
+
+> Example:
+
+```js
+    agent.sendSatisfy(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Extend Sorting Duration
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. When agent call is in the sorting status, the sorting duration can be extended for 30-900s.
+
+> Example:
+
+```js
+    agent.delayACW(
+        {
+            delayTime: 60,
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| delayTime| Extended time| number| No| Positive integer, 30-900s|
+
+#### ● End Sorting
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. When agent call is in the sorting status, the status can be ended in advance.
+
+> Example:
+
+```js
+    agent.completeACW(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● End Sorting and Set Occupied
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. When agent call is in the sorting status, the status can be ended in advance and set as DND.
+
+> Example:
+
+```js
+    agent.completeACWToBusy(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+#### ● Send Key
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.sendDtmf(
+        {
+            dtmfDigits: '801#',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| dtmfDigits| Key set| string| No| 24 digits max. The chars contain 1-9, *, #. E/g/: 801#.|
+
+### Assistance Operation
+
+#### ● Query Agent Outbound Routing Rules
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. After agent logs in,  the outbound call routing rules set in the "Outbound Routing" of the agent can be queried.
+
+> Example:
+
+```js
+    agent.queryRoutes(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| agentUuid| Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| explicitRule| Display rule array| object| Display rule set. See Table 1 below|
+| explicitSchema| Dynamic display scheme array| object| Dynamic display scheme set. See Table 2 below|
+| explicitNumbers| Display number array| object| Display number set. See Table 3 below|
+
+> Table 1 explicitrule display rule array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| code| Code| string| 1: Enterprise no. pool random matching; 2: Dynamic display no. scheme matching; 3: Agent no. pool designation.|
+| name| Name| string| Name.|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default display rule; false: Non-default display rule.|
+
+> Table 2 explicitschema display scheme array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| code| Code| string| Scheme ID|
+| planName| Name| string| Name.|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default scheme; false: Non-default scheme.|
+
+> Table 3 explicitnumbers display number array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| number| Display no.| string| Relay no.|
+| nickName| Number alias| string| Relay no. alias|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default display number; false: Non-default display number.|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Modify Agent Outbound Routing Rules
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. When the agent is available, the last used display rule of the agent can be switched.
+
+> Example:
+
+```js
+    agent.setRoute(
+        {
+            explicitRule: " 1 ",
+            explicitCode: "xxxxxxxx",
+            explicitNumber: " 13333333333 ",
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| explicitRule| Explicit rule| string| No| It should be within the data permission range of the agent display rules in \<Outbound Routing>.  1: Enterprise no. pool random matching; 2: Dynamic display no. scheme matching; 3: Agent no. pool designation.|
+| explicitCode| Dynamic display scheme code| string| Yes| It should be within the data permission range of the agent dynamic display schemes in \<Outbound Routing>.  Not blank when the display rule = dynamic display no. scheme matching.|
+| explicitNumber| Display no.| string| Yes| It should be within the data permission range of the agent individual no. pool in \<Outbound Routing>.  Not blank when the display rule = agent no. pool designation.|
+
+##### Return value
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| agentUUID| Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| explicitRule| Display rule array| object| Display rule set. See Table 1 below|
+| explicitSchema| Dynamic display scheme array| object| Dynamic display scheme set. See Table 2 below|
+| explicitNumbers| Display number array| object| Display number set. See Table 3 below|
+
+> Table 1 explicitrule display rule array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| code| Code| string| 1: Enterprise no. pool random matching; 2: Dynamic display no. scheme matching; 3: Agent no. pool designation.|
+| name| Name| string| Name.|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default display rule; false: Non-default display rule.|
+
+> Table 2 explicitschema display scheme array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| code| Code| string| Scheme ID|
+| planName| Name| string| Name.|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default scheme; false: Non-default scheme.|
+
+> Table 3 explicitnumbers display number array description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| number| Display no.| string| Relay no.|
+| nickName| Number alias| string| Relay no. alias|
+| hasSet| Default or not| boolean| Only 1 piece of data in the set is the default data.  true: Default display number; false: Non-default display number.|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Query Enterprise Skill Group List
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.queryQueues(
+        {
+            queue: 'group1',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+| queue| Skill Group| string| Yes| Fuzzy search. Support searching skill group no. or name.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| queues| Skill group list| object| Skill group queue array (see Table 1 below)|
+
+> Table 1 queues param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| queueCode| Skill group no.| string| Skill group ID|
+| queueName| Skill Group Name| string| Skill group name|
+| readyMembers| Ready agents| number| Number of agents whose work status is ready;|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Query Enterprise Agent List
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+
+> Example:
+
+```js
+    agent.queryAgents(
+        {
+            agentName: 'test_agent',
+            agentState: ' 1 ',
+            queueCode: ' 12345 ',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| agentName| Agent name| string| Yes| Precise search|
+| agentState| Agent work status| number| Yes| -1: All 1: Online; ready by default when blank.|
+| queueCode| Skill group no.| string| Yes| Precise search|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| agents| Agent list| object| Agent array (see Table 1 below)|
+
+> Table 1 queues param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| agentUUID| Agent ID| string| Agent ID|
+| agentID| Agent work no.| string| Agent work no.|
+| agentName| Agent name| string| Agent name|
+| ext| Extension account bound to the agent| string| Extension account bound to the agent|
+| agentState| Agent login status| number| Current agent status (0: Offline; 1: Available/ready; 2: DND)|
+| workStatus| Agent work status| number| 1: Ready|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorMessage| Failure reason| string| Failure reason|
+
+### Supervisor Operation
+
+#### ● Enforce Logout
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The agent will be enforced to log out after the operation.
+
+> Example:
+
+```js
+    agent.forceLogout(
+        {
+            targetAgentID: ' 1001 ',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| targetAgentID| Target agent| string| No| Agent work no. or id.|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Enforce Occupied
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The agent will be enforced to be occupied after the operation.
+
+> Example:
+
+```js
+    agent.forceBusy(
+        {
+            targetAgentID: ' 1001 ',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| targetAgentID| Target agent| string| No| Agent work no. or id.|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Enforce Available
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. The agent will be enforced to be ready after the operation.
+
+> Example:
+
+```js
+    agent.forceReady(
+        {
+            targetAgentID: ' 1001 ',
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| targetAgentID| Target agent| string| No| Agent work no. or id.|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+### Extension Function
+
+#### ● Query Skill Group Queuing No.
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Query the number of customers queuing for the skill group that the agent added.
+
+> Example:
+
+```js
+    agent.queryCountsInQueue(
+        {
+            success: function(event) {
+                // do something ...
+            },
+            error: function(cause) {
+                // Error, can't go on...
+            },
+        }
+    )
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| success| Success callback function| function| Yes| Callback function after request success.|
+| error| Failure callback function| function| Yes| Callback function after request failure.|
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| success: Success|
+| queues| Skill group list| object| Skill group queue array (see Table 1 below)|
+
+> Table 1 queues param description
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| queueID| Skill group no.| string| Skill group ID|
+| queueName| Skill Group Name| string| Skill group name|
+| count| Queuing No.| number| Queuing no. in the skill group|
+
+##### Return value of failure callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| status| Request status| string| error: Failure|
+| errorCode| Error code| string| Error code|
+| errorMessage| Failure reason| string| Failure reason|
+
+#### ● Subscribe to voice communication network quality data
+
+1. The return value of this API will continue to increase its attributes. Please use the correct compatible coding method to ensure that the code of the calling end will not throw errors when the return value attributes are increased!
+2. Only when the answering method is "web phone + SIP phone", query the network delay from the agent to the communication service side (CTI).
+
+> Example:
+
+```js
+    agent.on('EventJanusLatency', function (msg) {
+        // do something
+    })
+```
+
+##### Return value of success callback function
+
+| Attribute| Name| Type| Description|
+|----------|----------|----------|----------|
+| ping | Delay time| number| Unit: ms. |
+| jitter | Network jitter | number | Network jitter. Unit: ms. |
+| loss | Packet loss rate of a network | string  | Packet loss rate of a network. |
+| quality | Network quality for voice communications | string  | e: Good (smooth);  d: Normal (less smooth, with noise);  c: Poor (cannot hear very clearly, with delay);  b: Terrible (cannot hear clearly, with relatively severe delay, needing repeated communications);  a: Disconnected (cannot understand, with severe delay, not smooth communication); |
+

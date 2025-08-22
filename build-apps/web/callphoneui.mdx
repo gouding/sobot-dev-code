@@ -1,0 +1,176 @@
+---
+title: 'Call Capability (UI Phone Bar)'
+description: 'Mintlify gives you complete control over the look and feel of your documentation using the docs.json file'
+icon: 'gear'
+---
+
+
+### Precautions:
+
+- It is recommended to use Chrome browser first. It is not supported for use in mobile H5 pages. This version has only been fully tested for PC browsers. There may be unknown compatibility issues when used in mobile H5 pages.   
+- Since softphones need to rely on the WebRTC capabilities provided by the browser, when using softphones, it is recommended to use browsers with better support for WebRTC, such as Chrome or Firefox browsers.   
+- Integrating the SDK requires the use of the HTTPS protocol.   
+- Chrome browser needs to enable microphone and sound permissions. Firefox browser needs to enable microphone and speaker permissions.   
+- When using in an iFrame, the iframe needs to add an allow attribute. iframe.allow = "midi;encrypted-media;microphone *;camera *;"Only in this way can the relevant capabilities of WebRTC be used in the iframe.   
+
+### ui-sdk plug-in reference URL
+
+> Note: When using the SDK, please add the sysnum parameter in the following way. The sysnum corresponds to the enterprise ID of Sobot (which can be viewed in Sobot management background => Management Center => Account Management => Enterprise Account => Enterprise Information). Do not download the SDK code to the local area and use it on your own server to avoid being unable to obtain SDK updates in the future, resulting in the unavailability of the SDK.
+
+```js
+<script type="text/javascript" src="https://sg.sobot.io/call-bar/6.3.1/tel-bar-sdk.js?sysnum=Your enterprise ID"></script>
+```
+
+### Initialization
+
+#### ● Phone Bar Initialization
+
+```js
+// If only the UI Phone Bar SDK is introduced, the SDK will first load the JS-SDK internally, and then mount the window.sobotAgent object. When using window.sobotAgent.initTelBar, please first check if the method exists.
+// If the JS-SDK is introduced before the UI Phone Bar SDK, window.sobotAgent is mounted synchronously, and can be directly used in subsequent coding.
+
+ window.sobotCallBar.onReady(function () {
+    window.sobotAgent.initTelBar({
+        id: 'root',
+        token: "xxxxxxxxx",
+        companyId: "xxxxxxxxx",
+        agent: " 1000 ", // Agent ID
+        agentType: " 0 ",
+        themeColor:{
+            showLeftLine: true,
+            showRightLine: true,
+            light: "#ffffff",
+            dark: "#515A7C",
+            darkContent: "#434A66",
+        },
+        appConfig:{
+            placement: 'right' // Assistance function location
+            showQueueInfo: true, // Skill group queuing info
+            showNetDelayInfo: true, // Network delay info
+        },
+        actionConfig:{
+            transfer: true, // Transfer
+            consult: true, // Inquiry
+            keepContinue: true, // Hold (and cancel holding)
+            stillVoice: true, // Mute (and unmute)
+            sendSatisfaction: true, // Send satisfaction
+            extendBtn: true // Whether to display the Extend button
+            internal: true, // Whether to display the internal talk button
+            extendFinishTime: 60 , // Extend sorting duration, 60 by default
+        },
+        settingConfig:{
+            readOnlyExt: false,
+            showUnbind: true
+        }
+    },
+     function (msg) {
+            // The phone log received events will be pushed out through this function
+            // If you have integrated the UI-SDK and need to display your own incoming call pop-up information, you can listen to the call event here for processing, as shown below:
+
+            switch(msg.messageID) {
+                case 'EventRinging' :
+                    // Agent incoming call ringing
+                    // do something ...
+                    break
+                case 'EventDialing' :
+                    // Outbound call ringing
+                    // do something ...
+                    break
+                case 'EventTokenInvalid' :
+                    // Agent token is invalid.
+                    // Call the method for obtaining the token in your code to obtain the token again. After successful acquisition, call handleRefreshToken to update the token of the SDK.
+                    // window.sobotAgent.handleRefreshToken(newToken)
+                    // Note:
+                    // 1. After the token expires, if the method for refreshing the token is not called, calls can still be made, but HTTP interfaces cannot be called.
+                    // 2. After the EventTokenInvalid event is triggered, it will wait for 10 seconds to obtain a new token. During this period, the issued HTTP requests will be cached. After writing the new token, the cached requests will be reissued. If it exceeds 10 seconds without setting, the cache will be cleared and the EventTokenInvalid event will be triggered again.
+                    // 3. If you do not need to use handleRefreshToken to automatically update the token, it is recommended to add a pop-up prompt in EventTokenInvalid to prompt the agent that the current token has expired. You can refresh the page or perform other operations that can obtain the token again.
+                    break
+                default: 
+                    //  do something ...
+            }
+        }
+    
+    )
+ })
+    
+```
+
+##### Request Param params Description
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| token| Login authentication| string| No| Agent login authentication (please refer to the Sobot API authentication file for the docking token method) <font color="Red">Agent authorization API (agent token) should be docked</font>|
+| companyId| Company code| string| No| Company code|
+| agent| Agent| string| No| Agent work no. or id.|
+| agentType| API agent param type| string| No| 0: Agent work no., 1: Agent id; Agent work no. by default when it is null.|
+| id| Phone bar location| string| No| The location of phone bar on the page. E.g.: 'root', and the phone bar will be displayed in the element with the id as root.|
+| themeColor| Phone bar pattern configuration| object| Yes| Customize the pattern of phone bar (e.g.: background color, separator, etc.). When it is blank, use the default configuration recommended by the system. See Table 1 below|
+| appConfig| Assistance function configuration| object| Yes| Whether the phone bar needs to display and customize assistance functions (network delay, number of queuing customers, etc.). When it is blank, not display by default. See Table 2 below|
+| actionConfig| Phone function configuration| object| Yes| Customize phone functions. When it is blank, use the default configuration recommended by the system. See Table 3 below|
+| settingConfig| Setting function configuration| object| Yes| Customize setting functions. When it is blank, use the default configuration recommended by the system. See Table 4 below|
+
+> Table 1 themeColor param description
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| showLeftLine| Left separator| boolean| Yes| Whether to display separator on the leftmost side of phone bar (including assistance function area). false: Hide, true: Display. Hide by default.|
+| showRightLine| Right separator| boolean| Yes| Whether to display separator on the rightmost side of phone bar (including assistance function area). false: Hide, true: Display. Hide by default.|
+| light| UI background color when no talk| string| Yes| UI background color (RGB color) when no talk. When it is blank, #FFFFFF by default.|
+| dark| Main area background color in talk| string| Yes| Main area background color (RGB color) of phone bar in talk. When it is blank, #515A7C by default.|
+| darkContent| Extension area background color in talk| string| Yes| Extension area background color (RGB color) of phone bar in talk. When it is blank, #434A66 by default.|
+
+> Table 2 appConfig param description
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| placement| Display location| string| Yes| Whether the assistance function is displayed on the left or right side of the phone bar. left: Left side of the phone bar; right: Right side of phone bar.|
+| showQueueInfo| View the queuing no.| boolean| Yes| Whether to display the function icon. false: Hide, true: Display. Display by default.|
+| showNetDelayInfo| View the network delay| boolean| Yes| Whether to display the function icon. The icon is only visible when the answering method is web phone. false: Hide, true: Display. Display by default.|
+
+> Table 3 actionConfig param description
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| transfer| Transfer| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| consult| Inquiry| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| keepContinue| Hold (and cancel holding)| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| stillVoice| Mute (and unmute)| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| sendSatisfaction| Send satisfaction| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| extendBtn| Extend sorting duration| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| extendFinishTime| Extended time| number| Yes| Extend the sorting each time after configuration. 30-900s. When it is blank, 60s by default.|
+| internal| Internal talk| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| acwToBusy| End sorting and set occupied| boolean| Yes| Whether to display the operation button. false: Hide, true: Display. When it is blank, display by default.|
+| dialingPad| Dial pad| boolean| Yes|Whether the dial pad can be used Dial pad. false: Hide, true: Display. When it is blank, display by default.|
+| soundRecording | Call recording (and cancel call recording)| boolean| Yes|Whether to display the operation button. false: Hide, true: Display. When it is blank, hide by default.|
+| region | Country Code | boolean| Yes|Whether to display the  Country Code. false: Hide, true: Display. When it is blank, hide by default.|
+
+> Table 4 settingConfig param description
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| readOnlyExt| Modify extension no.| boolean| Yes| Modify Agent bind Ext. No 。 false: Modifiable: true: Read only. When it is blank, modifiable by default.|
+| showUnbind| Unbind automatically after offline| boolean| Yes| Whether the UI displays the function. false: Hide, true: Display. When it is blank, display by default.|
+| chooseOverseasEdgeLocation| Singapore voice access point| boolean| Yes| By selecting the nearest voice access site, real-time voice communication can be conducted using nearby servers, thus reducing communication latency and effectively improving the system's response speed and bandwidth utilization efficiency.Note: Only one of chooseOverseasEdgeLocation and chooseNorthAmericaLocation can be true.|
+| chooseNorthAmericaLocation| North American voice access point| boolean| Yes| By selecting the nearest voice access site, real-time voice communication can be conducted using nearby servers, thus reducing communication latency and effectively improving the system's response speed and bandwidth utilization efficiency.Note: Only one of chooseOverseasEdgeLocation and chooseNorthAmericaLocation can be true.|
+
+### Call Operation
+
+#### ● Outbound
+
+```js
+// Execute only after phone bar initialization
+window.sobotAgent.makeCall({
+    otherDN: " 133****3333 ",
+    privacyNumber: "XFHAOWHFEFLASJLKWJLD",
+    userData: {}
+})
+```
+
+##### Request param
+
+| Attribute| Name| Type| Nullable| Description|
+|----------|----------|----------|----------|----------|
+| otherDN| Customer Phone No.| string| No| Customer number displayed by UI.|
+| privacyNumber| Customer no. encryption| string| Yes| Support making outbound calls with encrypted number; e.g.: XFHAOWHFEFLASJLKWJLD.|
+| userData| Custom Data| object| Yes| Return the value in the call event. Store the value in the talk record. encodeURIComponent code is required|
+

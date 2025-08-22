@@ -1,0 +1,47 @@
+---
+title: 'Online Web-Link'
+description: 'Display inline code and code blocks'
+icon: 'code'
+---
+
+#### Overview
+
+It is a web-only connection mode. Sobot provides a URL for direct agent inquiry, and enterprises can place this URL where they need to access Sobot in their own applications (for example, an agent inquiry hyperlink in an article on the WeChat official account; or click the agent inquiry button on the enterprise's official website to directly jump to this URL).
+
+Web-only connection mode involves the lowest access cost, as the enterprise front end is required to add the link to the place where it needs to jump. However, this mode also sacrifices some advanced functions, such as browsing track collection, agent proactive chat invitation, etc.
+
+#### Relevant Restrictions and Precautions
+
+##### Desktop website docking
+
+If the client browser is IE, it needs to be IE 10 and above.
+
+For parameters involving Chinese and special symbols in docking, it is recommended to use encodeURIComponent to translate them before passing the parameters.
+
+#### Deployment
+
+##### ● Admin acquires the access code
+
+> Sobot Console - Settings -Docking Channel Settings -\<Select a Channel>- Deployment Settings - Method 1
+
+![Deployment](/images/web/web-js/channel-js.png)
+
+##### ● Docking Example
+
+To implement `Modify the theme colors` and the reception mode is `Labor first`, you can find the corresponding param in the [ Parameter List ](https://developer.sobot.io/en/pages/246fbc/#parameter-list) and add it to the url
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat Client</title>
+  </head>
+  <body>
+    <!--html tag-->
+    <a href="https://sg.sobot.io/chat/h5/v2/index.html?sysnum=4c349791a07b46c1a70b8ac88aa23257&type=4&color=38bdbf" target="_blank">Welcome</a>
+    <!--html tag-->
+  </body>
+</html>
+```
+
+The chat link provides the same agent function as the web component. By opening a new page in the form of a link for inquiry and access, it allows enterprises to achieve personalized agent scheme configuration by appending specific params to the URL. Please refer to [Web-JS Access Description](https://developer.sobot.io/en/pages/246fbc) for details.
